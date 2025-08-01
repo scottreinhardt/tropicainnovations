@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- Bootstrap CSS (from CDN) -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.3.1/dist/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <title>Full Page Grid</title>
+  <style>
+    /* Ensure full-page layout */
+    html, body {
+      height: 100%;
+      margin: 0;
+      padding: 0;
+    }
+
+    .wrapper {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      grid-template-rows: auto repeat(4, 1fr); /* Navbar adjusts to content, other rows follow */
+      grid-gap: 1em;
+      height: 100vh; /* Full viewport height */
+      width: 100%; /* Full width */
+      padding: 1em;
+    }
+
+    .navbar {
+      grid-area: 1 / 1 / 2 / 6;
+      background: #007BFF;
+      color: white;
+      text-align: center;
+      padding: 0.5em; /* Adjusted for better spacing */
+    }
+
+    .current_wx {
+      grid-area: 2 / 1 / 6 / 2;
+      background: lightgray;
+      padding: 1em;
+    }
+
+    .seven_day_forecast {
+      grid-area: 2 / 2 / 4 / 4;
+      background: lightblue;
+      padding: 1em;
+    }
+
+    .map {
+      grid-area: 2 / 4 / 4 / 6;
+      background: lightgreen;
+      padding: 1em;
+    }
+
+    .meteogram {
+      grid-area: 4 / 2 / 6 / 6;
+      background: lightcoral;
+      padding: 1em;
+    }
+
+    /* Outline for visibility */
+    .wrapper > div {
+      outline: 2px dotted black;
+      border-radius: 25px;
+    }
+    .navbar {
+      background-color: #005A9E; /* Darker blue */
+      color: white;
+    }
+
+    .navbar-brand, .nav-link {
+      color: white !important;
+    }
+
+    #myChart {
+      width: 100%; /* Full width of the container */
+      height: 100%; /* Full height of the container */
+      max-width: 100%;
+      max-height: 100%;
+    }
+
+    .meteogram {
+  width: 100%; /* Adjust as needed */
+  max-width: 800px; /* Set a maximum width */
+  height: 400px; /* Fixed height to ensure content stays inside */
+  overflow: hidden; /* Prevents overflow */
+  border: 2px solid black; /* Optional: just for visibility */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative; /* Ensure it acts as a container */
+  background: white; /* To prevent any transparency issues */
+}
+
+.meteogram canvas {
+  width: 100% !important; /* Ensures the chart takes full width of the container */
+  height: 100% !important; /* Ensures the chart takes full height */
+  max-height: 100%;
+  max-width: 100%;
+}
+
+  </style>
+</head>
+<body>
+  <div class="wrapper">
+    <div class="navbar">
+      <nav class="navbar navbar-expand-lg navbar-light">
+        <a class="navbar-brand" href="#">
+          <img src="http://tropicainnovations.weebly.com/uploads/3/6/0/1/3601755/tropica-logo-png-001_orig.png" style="width:35px;height:35px;">
+          Tropica Innovations
+        </a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+          <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div class="collapse navbar-collapse" id="navbarSupportedContent">
+          <ul class="navbar-nav mr-auto">
+            <li class="nav-item active">
+              <a class="nav-link" href="http://127.0.0.1:5001">Home</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="http://127.0.0.1:5001/model_maps">Model Maps</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="http://127.0.0.1:5001/metar_map">METAR Map</a>
+            </li>
+          </ul>
+
+          <form id="locationForm" class="form-inline">
+              <div class="form-group d-flex align-items-center">
+                  <label for="inputLocation" class="sr-only">Enter Location</label>
+                  <input type="text" class="form-control" id="inputLocation" placeholder="Enter Location" style="height: 38px;">
+                  <button type="submit" class="btn btn-primary ml-2" style="height: 38px;">Submit</button>
+                  <button onclick="getUserLocation()" class="btn btn-outline-success ml-2" type="button" style="height: 38px;"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-geo-alt-fill" viewBox="0 0 16 16">
+    <path d="M8 16s6-5.686 6-10A6 6 0 0 0 2 6c0 4.314 6 10 6 10m0-7a3 3 0 1 1 0-6 3 3 0 0 1 0 6"/>
+  </svg></button>
+              </div>
+          </form>
+        </div>
+      </nav>
+    </div>
+    <div class="current_wx">
+      <div id="currentWeather" class="current_weather">
+        <h2> Current Conditions in:</h2>
+        <p id="address"></p>
+        <p id="location"></p>
+          <!-- Current weather details will be populated here -->
+      </div>
+    </div>
+    <div class="seven_day_forecast">7 Day Forecast</div>
+    <div class="map">Map</div>
+
+
+    <div class="meteogram">
+      <div>
+      <canvas id="myChart"></canvas>
+      </div>
+      <div class = "interactive_forecast">
+        <pre id="data"></pre>
+
+        <canvas id="temperatureChart" width="100px" height="200px"></canvas>
+        <script>
+        const locationForm = document.getElementById("locationForm");
+
+        // Add an event listener to handle form submission
+        locationForm.addEventListener("submit", function(event) {
+          event.preventDefault(); // Prevent the form from refreshing the page
+          let chartExists = Chart.getChart('myChart');
+          if (chartExists) {
+            // Chart with the given ID already exists
+            // If you are entering a new location or reentering the same location, make sure to destroy the old canvas
+            Chart.destroy();
+          } else {
+            // No chart with the given ID exists
+            console.log('No chart found.');
+          }
+          // Access the input field value
+          const locationInput = document.getElementById("inputLocation").value;
+
+          // Display the location in the <p> element
+          document.getElementById("displayLocation").innerText = "You entered: " + locationInput;
+          let queryLocation = encodeURIComponent(locationInput); // Proper encoding for API request
+          fetch("https://api.geoapify.com/v1/geocode/search?text=" + queryLocation + "&format=json&apiKey=09f93f7747804b9b9455f42d2cb443c8")
+            .then(response => {
+              if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+              }
+              return response.json(); // Parse JSON response
+            })
+            .then(result => {
+              console.log("Geocoding result:", result); // Log the result
+              console.log(result);
+              let results = result.results;
+              let lat = results[0].lat;
+              let lon = results[0].lon;
+              console.log(lat);
+              getWeatherDataTextPrompt(lat, lon);
+              //let lat = json_decipher(JSON.stringify(result, null, 2)); // Display the result in an alert
+            })
+            .catch(error => console.error("Error:", error)); // Log errors
+          // Log the value
+          console.log("Location entered:", locationInput);
+          alert("Location entered: " + locationInput);
+        });
+
+        function getCoordinatesFromGeoapify(location) {
+            // The secret api key shhhhh
+            const apiKey = "09f93f7747804b9b9455f42d2cb443c8";
+            // URL for Geoapify to return the users current location
+            const url = `https://api.geoapify.com/v1/geocode/reverse?lat=${lat}&lon=${lon}&apiKey=${apiKey}`;
+
+            fetch(url)
+              .then(response => response.json())
+              .then(data => {
+                  console.log("Geoapify Response:", data);
+
+                  if (!data.features || data.features.length === 0) {
+                      alert("Location not found. Try a different search.");
+                      return;
+                  }
+
+                  const lat = data.features[0].properties.lat;
+                  const lon = data.features[0].properties.lon;
+                  document.getElementById("location").innerText = `Latitude: ${lat}, Longitude: ${lon}`;
+
+                  // Fetch weather for the obtained coordinates
+                  fetchWeatherData(lat, lon);
+              })
+              .catch(error => {
+                  console.error("Error fetching coordinates:", error);
+                  alert("Error fetching location data.");
+              });
+          };
+
+
+          // Fetch user's location
+          function getUserLocation() {
+              if (navigator.geolocation) {
+                  navigator.geolocation.getCurrentPosition(
+                      successCallback,
+                      errorCallback
+                  );
+              } else {
+                  alert("Geolocation is not supported by your browser.");
+              }
+          }
+
+          // Success callback
+          function successCallback(position) {
+              console.log("Geolocation successful");
+              const latitude = position.coords.latitude;
+              const longitude = position.coords.longitude;
+              console.log(`Latitude: ${latitude}, Longitude: ${longitude}`);
+
+              document.getElementById("location").innerText = `Latitude: ${latitude}, Longitude: ${longitude}`;
+              fetchGeoapifyData(latitude, longitude);
+          }
+
+          // Error callback
+          function errorCallback(error) {
+              console.error("Error getting location:", error);
+              alert(`Unable to retrieve location. Error: ${error.message}`);
+          }
+
+          // Fetch Geoapify data and send data to Flask backend
+          function fetchGeoapifyData(lat, lon) {
+              // The secret api key shhhhh
+              const apiKey = "09f93f7747804b9b9455f42d2cb443c8";
+              // URL for Geoapify to return the users current location
+              const url = `https://api.geoapify.com/v1/geocode/reverse?lat=${lat}&lon=${lon}&apiKey=${apiKey}`;
+              // fetch('/') sends an HTTP request to your flask server (/ route)
+              // Flask will then handle this using the @app.route('/', methods=['POST']) endpoint
+              fetch(url)
+                  // parse the json response from Flask
+                  // converts the response from flask (containing infoirmation about a users current location) into a Javascript object
+                  .then(response => response.json())
+                  // Handle the parsed geographic information (current location)
+                  .then(data => {
+                      // log the geoapify data (current location json formatted data) that was returned by Flask
+                      console.log("Geoapify Data:", data);
+                      // Extracts the formatted address from Geoapify response (current location data in json format)
+                      // Example of json data: Geoapify Data: {features: [{properties: {formatted: "123 Main St, Springfield, USA"}}]}
+                      // data.features[0] means get the first feature from the data array
+                      //data.features[0]?.properties?.formatted extracts the formatted address from the Geoapify response
+                      // if any part of the chain of data.features[0]?.properties?.formatted can't be accessed, this will will not throw an error.
+                      // It safely accesses nested properties without throwing an error if any part of the chain (features[0] or properties) is undefined or null.
+                      // formatted is the atual address returned by Geoapify
+                      // If there is no sddress foud, it returns "No Address Found"
+                      const formattedAddress = data.features[0]?.properties?.formatted || "No address found";
+                      //  Updates the HTML element with the id="address" to display the formatted extracted address
+                      document.getElementById("address").innerText = `Address: ${formattedAddress}`;
+
+                      // Send latitude and longitude to Flask
+                      // Send a 'POST' request to the server (Flask App) with the users lat and lon1
+                      // Wait for a response (weather data processed in weather_api_test.py), process it, and use it to create a weather chart
+                      // Send a 'POST' request to '/' (the server's root endpoint)
+                      fetch('/', {
+                          method: 'POST',
+                          headers: {
+                              'Content-Type': 'application/json',
+                          },
+                          body: JSON.stringify({ lat, lon }),
+                      })
+                          .then(response => response.json())
+                          //waits for the server to respond to the post request
+                          .then(weatherData => {
+                              console.log(response.json());
+                              console.log("Weather Data:", weatherData);
+                              createWeatherChart(weatherData);
+                          })
+                          // If there is no weather data return an error to the console
+                          .catch(error => console.error("Error fetching weather data:", error));
+                  })
+                  // Catches and logs any errors during the data fetching process
+                  // If Geoapify doesnt return any data then return an error to the console
+                  .catch(error => {
+                      // Log the error to the console
+                      console.error("Error fetching Geoapify data:", error);
+                  });
+          }
+
+          function getWeatherDataTextPrompt(lat, lon) {
+            fetch('/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ lat, lon }),
+            })
+                .then(response => response.json())
+                //waits for the server to respond to the post request
+                .then(weatherData => {
+                    console.log("Weather Data:", weatherData);
+                    createWeatherChart(weatherData);
+                })
+                // If there is no weather data return an error to the console
+                .catch(error => console.error("Error fetching weather data:", error));
+          }
+
+          function setCurrentWxIcon() {
+
+          };
+          /*
+          // Create the chart
+          function createWeatherChart(weatherData) {
+              // Parse weatherData if it's a string
+              if (typeof weatherData === 'string') {
+                  try {
+                      weatherData = JSON.parse(weatherData); // Convert string to JSON object
+                  } catch (error) {
+                      console.error("Error parsing weatherData as JSON:", error);
+                      alert("Failed to process weather data.");
+                      return;
+                  }
+              }
+
+              // Ensure weatherData is an array
+              if (!Array.isArray(weatherData)) {
+                  console.error("Parsed weatherData is not an array. Received:", weatherData);
+                  alert("Weather data is invalid.");
+                  return;
+              }
+
+              // Extract labels and data
+              const labels = weatherData.map(entry => new Date(entry.date).toLocaleString());
+              const data = weatherData.map(entry => entry.temperature_2m);
+
+              // Create the chart
+              const ctx = document.getElementById('myChart').getContext('2d');
+              new Chart(ctx, {
+                  type: 'line',
+                  data: {
+                      labels: labels,
+                      datasets: [{
+                          label: 'Temperature ºF',
+                          data: data,
+                          borderWidth: 1,
+                          borderColor: 'rgba(75, 192, 192, 1)',
+                          backgroundColor: 'rgba(75, 192, 192, 0.2)'
+                      }]
+                  },
+                  options: {
+                      plugins: {
+                          title: {
+                              display: true,
+                              text: '7 Day Forecast',
+                              padding: {
+                                  top: 10,
+                                  bottom: 30
+                              },
+                              font: {
+                                  size: 20
+                              }
+                          }
+                      },
+                      scales: {
+                          y: {
+                              beginAtZero: true,
+                              ticks: {
+                                  callback: function(value) {
+                                      return value + 'ºF';
+                                  }
+                              }
+                          }
+                      }
+                  }
+              });
+          }*/
+
+      function createWeatherChart(weatherData) {
+        // Parse weatherData if it's a string
+        if (typeof weatherData === 'string') {
+            try {
+                weatherData = JSON.parse(weatherData); // Convert string to JSON object
+            } catch (error) {
+                console.error("Error parsing weatherData as JSON:", error);
+                alert("Failed to process weather data.");
+                return;
+            }
+        }
+
+        // Validate the structure of weatherData
+        if (!weatherData || !weatherData.current_weather || !weatherData.hourly_forecast) {
+            console.error("Invalid weatherData structure. Received:", weatherData);
+            alert("Weather data is invalid.");
+            return;
+        }
+
+        // Extract current weather
+        const currentWeather = weatherData.current_weather;
+        console.log("Current Weather:", currentWeather);
+
+        // Display current weather information
+        const currentWeatherElement = document.getElementById("currentWeather");
+        currentWeatherElement.innerHTML = `
+            <p>Temperature: ${currentWeather.temperature} °F</p>
+            <p>Apparent Temperature: ${currentWeather.apparent_temperature} °F</p>
+            <p>Chance of Precipitation: ${currentWeather.precipitation} °F</p>
+            <p>Surface Pressure: ${currentWeather.surface_pressure} °F</p>
+            <p>Wind Speed (10m): ${currentWeather.wind_speed_10m} °F</p>
+            <p>Wind Gusts (10m): ${currentWeather.wind_gusts_10m} °F</p>
+            <p>Wind Direction (10m): ${currentWeather.wind_direction_10m} °F</p>
+            <p>Relative Humidity: ${currentWeather.relative_humidity} %</p>
+            <p>Time: ${new Date(currentWeather.time * 1000).toLocaleString()}</p>
+            <p>Coordinates: ${currentWeather.latitude}°N, ${currentWeather.longitude}°E</p>
+            <p>Elevation: ${currentWeather.elevation} m</p>
+        `;
+
+        // Extract hourly forecast
+        let hourlyForecast;
+        alert(hourlyForecast)
+        try {
+            hourlyForecast = JSON.parse(weatherData.hourly_forecast); // Parse hourly_forecast if it's a string
+        } catch (error) {
+            console.error("Error parsing hourly_forecast as JSON:", error);
+            alert("Failed to process hourly forecast data.");
+            return;
+        }
+
+        if (!Array.isArray(hourlyForecast)) {
+            console.error("Parsed hourly_forecast is not an array. Received:", hourlyForecast);
+            alert("Hourly forecast data is invalid.");
+            return;
+        }
+
+        // Extract labels and data for the chart
+        const labels = hourlyForecast.map(entry => new Date(entry.date).toLocaleString());
+        const data = hourlyForecast.map(entry => entry.temperature_2m);
+
+        // Create the chart
+        const ctx = document.getElementById('myChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Temperature ºF',
+                    data: data,
+                    borderWidth: 1,
+                    borderColor: 'rgba(75, 192, 192, 1)',
+                    backgroundColor: 'rgba(75, 192, 192, 0.2)'
+                }]
+            },
+            options: {
+                plugins: {
+                    title: {
+                        display: true,
+                        text: '7 Day Forecast',
+                        padding: {
+                            top: 10,
+                            bottom: 30
+                        },
+                        font: {
+                            size: 20
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            callback: function (value) {
+                                return value + 'ºF';
+                            }
+                        }
+                    }
+                }
+            }
+        });
+  }
+
+
+        </script>
+
+      </div>
+    </div>
+  </div>
+</body>
+</html>

@@ -1,0 +1,1217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- Bootstrap CSS (from CDN) -->
+    <!-- Bootstrap CSS -->
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <title>Tropica Innovations Homepage</title>
+  <style>
+    /*.content { display: none; padding: 10px; border: 1px solid #ddd; margin-bottom: 10px; }*/
+    .collapsible { background-color: #eee; cursor: pointer; padding: 10px; width: 100%; border: none; text-align: left; font-size: 16px; }
+    /* Ensure full-page layout */
+    html, body {
+      height: 100%;
+      margin: 0;
+      padding: 0;
+      background-color: #E6F4F1;
+
+    }
+
+    .wrapper {
+      height: 100vh; /* Full viewport height */
+      width: 100%; /* Full width */
+      padding: 1em;
+    }
+    .navbar {
+      background: #007BFF;
+      color: white;
+      text-align: center;
+      padding: 0.5em; /* Adjusted for better spacing */
+    }
+
+    .current_wx {
+      /*background: lightgray;*/
+      padding: 1em;
+      display: flex;
+      flex-direction: column;
+      align-items: center;  /* Centers everything horizontally */
+    }
+
+    .seven_day_forecast {
+      padding: 1em;
+      min-height: fit-content;
+      height: auto;
+    }
+
+    .map {
+      padding: 1em;
+    display: flex; /* Ensures iframe stretches properly */
+    align-items: stretch;
+    justify-content: stretch;
+    height: 500px;
+    }
+    .map iframe {
+    width: 100%;
+    height: 100%;
+    border: none; /* Removes unwanted border */
+}
+    .meteogram {
+      background: lightcoral;
+      padding: 1em;
+    }
+
+    .navbar {
+      background-color: #005A9E; /* Darker blue */
+      color: white;
+    }
+
+    .navbar-brand, .nav-link {
+      color: white !important;
+    }
+
+    #myChart {
+      width: 100%; /* Full width of the container */
+      height: 100%; /* Full height of the container */
+      max-width: 100%;
+      max-height: 100%;
+    }
+
+    .meteogram {
+  width: 100%; /* Adjust as needed */
+  max-width: 800px; /* Set a maximum width */
+  height: 400px; /* Fixed height to ensure content stays inside */
+  overflow: hidden; /* Prevents overflow */
+  border: 2px solid black; /* Optional: just for visibility */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative; /* Ensure it acts as a container */
+  background: white; /* To prevent any transparency issues */
+}
+
+.meteogram canvas {
+  width: 100% !important; /* Ensures the chart takes full width of the container */
+  height: 100% !important; /* Ensures the chart takes full height */
+  max-height: 100%;
+  max-width: 100%;
+}
+
+#day1_forecast {
+    width: 20px;
+    height: 10px;
+    border: 2px solid black:
+}
+
+.forecast-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 1rem;
+}
+
+.forecast-day {
+  background: #f9f9f9;
+  border-radius: 10px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+  padding: 1rem;
+  text-align: center;
+}
+
+.collapsible {
+  background-color: #4287f5;
+  color: white;
+  cursor: pointer;
+  padding: 12px 18px;
+  width: 100%;
+  border: none;
+  text-align: left;
+  outline: none;
+  font-size: 16px;
+  transition: background-color 0.3s;
+  border-radius: 6px;
+  margin-bottom: 5px;
+}
+
+.collapsible:hover {
+  background-color: #306bd6;
+}
+
+.collapsible.active {
+  background-color: #2a5abc;
+}
+
+.content {
+  padding: 0 18px;
+  max-height: 0;
+  overflow: hidden;
+  background-color: #f1f1f1;
+  transition: max-height 0.3s ease-out;
+  border-radius: 0 0 6px 6px;
+  margin-bottom: 10px;
+}
+
+  </style>
+</head>
+<body>
+  <div class="wrapper">
+    <div class="navbar">
+      <nav class="navbar navbar-expand-lg navbar-light">
+        <a class="navbar-brand" href="#">
+          <img src="https://tropicainnovations.weebly.com/uploads/3/6/0/1/3601755/tropica-logo-png-001_orig.png" style="width:35px;height:35px;">
+          Tropica Innovations
+        </a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+          <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div class="collapse navbar-collapse" id="navbarSupportedContent">
+          <ul class="navbar-nav mr-auto">
+            <li class="nav-item active">
+              <a class="nav-link" href="https://tropicainnovations.pythonanywhere.com">Home</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="https://tropicainnovations.pythonanywhere.com/model_maps">Model Maps</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="https://tropicainnovations.pythonanywhere.com/map">METAR Map</a>
+            </li>
+          </ul>
+
+          <form id="locationForm" class="form-inline">
+              <div class="form-group d-flex align-items-center">
+                  <label for="inputLocation" class="sr-only">Enter Location</label>
+                  <input type="text" class="form-control" id="inputLocation" placeholder="Enter Location" style="height: 38px;">
+                  <button onclick = "locationInputToCoords()" type="submit" class="btn btn-primary ml-2" style="height: 38px;">Submit</button>
+                  <button onclick="getUserLocation()" class="btn btn-outline-success ml-2" type="button" style="height: 38px;"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-geo-alt-fill" viewBox="0 0 16 16">
+    <path d="M8 16s6-5.686 6-10A6 6 0 0 0 2 6c0 4.314 6 10 6 10m0-7a3 3 0 1 1 0-6 3 3 0 0 1 0 6"/>
+  </svg></button>
+              </div>
+          </form>
+        </div>
+      </nav>
+    </div>
+    <div class="current_wx">
+      <div id="currentWeather" class="current_weather">
+        <p id="address"></p>
+        <p id="location"></p>
+        <p id="current_weather"></p>
+          <!-- Current weather details will be populated here -->
+      </div>
+    </div>
+                <div id = "closest_cities_wx">
+            </div>
+            <div id = "closest_cities_wx_cards">
+                <!-- Put bootstrap cards containing the town name as the header and weather information as the body-->
+            </div>
+    <div class="seven_day_forecast">
+        <div id="forecast-container">
+
+        </div>
+    </div>
+    <div class="map">
+   <div id="map-container"></div> <!-- This will be replaced with map.html -->
+    <!--
+    <iframe id="mapFrame"
+            src="https://tropicainnovations.pythonanywhere.com/map"
+            frameborder="0"
+            scrolling="auto">
+    </iframe>-->
+<iframe id="mapFrame"
+        src="https://tropicainnovations.pythonanywhere.com/map"
+        frameborder="0"
+        scrolling="auto">
+</iframe>
+</div>
+<!--
+    <div class="meteogram">
+      <div>
+      <canvas id="myChart"></canvas>
+      </div>
+      <div class = "interactive_forecast">
+        <pre id="data"></pre>
+
+        <canvas id="temperatureChart" width="100px" height="200px"></canvas>
+        -->
+        <script>
+        const locationForm = document.getElementById("locationForm");
+
+        // Add an event listener to handle form submission
+        locationForm.addEventListener("submit", function(event) {
+          event.preventDefault(); // Prevent the form from refreshing the page
+          let chartExists = Chart.getChart('myChart');
+          if (chartExists) {
+            // Chart with the given ID already exists
+            // If you are entering a new location or reentering the same location, make sure to destroy the old canvas
+            Chart.destroy();
+          } else {
+            // No chart with the given ID exists
+            console.log('No chart found.');
+          }
+          /*
+          // Access the input field value
+          const locationInput = document.getElementById("inputLocation").value;
+
+          // Display the location in the <p> element
+          document.getElementById("displayLocation").innerText = "You entered: " + locationInput;
+          let queryLocation = encodeURIComponent(locationInput); // Proper encoding for API request
+          fetch("https://api.geoapify.com/v1/geocode/search?text=" + queryLocation + "&format=json&apiKey=09f93f7747804b9b9455f42d2cb443c8")
+            .then(response => {
+              if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+              }
+              return response.json(); // Parse JSON response
+            })
+            .then(result => {
+              console.log("Geocoding result:", result); // Log the result
+              console.log(result);
+              let results = result.results;
+              let lat = results[0].lat;
+              let lon = results[0].lon;
+              console.log(lat);
+              getWeatherDataTextPrompt(lat, lon);
+              //let lat = json_decipher(JSON.stringify(result, null, 2)); // Display the result in an alert
+            })
+            .catch(error => console.error("Error:", error)); // Log errors
+          // Log the value
+          console.log("Location entered:", locationInput);
+          alert("Location entered: " + locationInput);
+          */
+        });
+
+        function getCoordinatesFromGeoapify(location) {
+            // The secret api key shhhhh
+            const apiKey = "09f93f7747804b9b9455f42d2cb443c8";
+            // URL for Geoapify to return the users current location
+            const url = `https://api.geoapify.com/v1/geocode/reverse?lat=${lat}&lon=${lon}&apiKey=${apiKey}`;
+
+            fetch(url)
+              .then(response => response.json())
+              .then(data => {
+                  console.log("Geoapify Response:", data);
+
+                  if (!data.features || data.features.length === 0) {
+                      alert("Location not found. Try a different search.");
+                      return;
+                  }
+
+                  const lat = data.features[0].properties.lat;
+                  const lon = data.features[0].properties.lon;
+                  document.getElementById("location").innerText = `Latitude: ${lat}, Longitude: ${lon}`;
+
+                  // Fetch weather for the obtained coordinates
+                  fetchWeatherData(lat, lon);
+              })
+              .catch(error => {
+                  console.error("Error fetching coordinates:", error);
+                  alert("Error fetching location data.");
+              });
+          };
+
+
+        function locationInputToCoords() {
+          // Access the input field value
+          const locationInput = document.getElementById("inputLocation").value;
+          console.log(locationInput);
+
+          // Display the location in the <p> element
+          //document.getElementById("displayLocation").innerText = "You entered: " + locationInput;
+          let queryLocation = encodeURIComponent(locationInput); // Proper encoding for API request
+          fetch("https://api.geoapify.com/v1/geocode/search?text=" + queryLocation + "&format=json&apiKey=09f93f7747804b9b9455f42d2cb443c8")
+            .then(response => {
+              if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+              }
+              return response.json(); // Parse JSON response
+            })
+            .then(result => {
+              console.log("Geocoding result:", result); // Log the result
+              console.log(result);
+              let results = result.results;
+              let lat = results[0].lat;
+              let lon = results[0].lon;
+              console.log(lat);
+              console.log(lon);
+              try {
+                getWeather(lat, lon);
+              } catch (error) {
+                console.error(error);
+              // Expected output: ReferenceError: nonExistentFunction is not defined
+              // (Note: the exact output may be browser-dependent)
+            }
+              //let lat = json_decipher(JSON.stringify(result, null, 2)); // Display the result in an alert
+            })
+            .catch(error => console.error("Error:", error)); // Log errors
+          // Log the value
+          console.log("Location entered:", locationInput);
+          alert("Location entered: " + locationInput);
+        }
+
+          // Fetch user's location
+          function getUserLocation() {
+              if (navigator.geolocation) {
+                  navigator.geolocation.getCurrentPosition(
+                      successCallback,
+                      errorCallback
+                  );
+              } else {
+                  alert("Geolocation is not supported by your browser.");
+              }
+          }
+
+          // Success callback
+          function successCallback(position) {
+              console.log("Geolocation successful");
+              const latitude = position.coords.latitude;
+              const longitude = position.coords.longitude;
+              console.log(`Latitude: ${latitude}, Longitude: ${longitude}`);
+
+              document.getElementById("location").innerText = `Latitude: ${latitude}, Longitude: ${longitude}`;
+              fetchGeoapifyData(latitude, longitude);
+          }
+
+          // Error callback
+          function errorCallback(error) {
+              console.error("Error getting location:", error);
+              alert(`Unable to retrieve location. Error: ${error.message}`);
+          }
+
+          // Fetch Geoapify data and send data to Flask backend
+          function fetchGeoapifyData(lat, lon) {
+              // The secret api key shhhhh
+              const apiKey = "09f93f7747804b9b9455f42d2cb443c8";
+              // URL for Geoapify to return the users current location
+              const url = `https://api.geoapify.com/v1/geocode/reverse?lat=${lat}&lon=${lon}&apiKey=${apiKey}`;
+              // fetch('/') sends an HTTP request to your flask server (/ route)
+              // Flask will then handle this using the @app.route('/', methods=['POST']) endpoint
+              fetch(url)
+                  // parse the json response from Flask
+                  // converts the response from flask (containing infoirmation about a users current location) into a Javascript object
+                  .then(response => response.json())
+                  // Handle the parsed geographic information (current location)
+                  .then(data => {
+                      // log the geoapify data (current location json formatted data) that was returned by Flask
+                      console.log("Geoapify Data:", data);
+                      // Extracts the formatted address from Geoapify response (current location data in json format)
+                      // Example of json data: Geoapify Data: {features: [{properties: {formatted: "123 Main St, Springfield, USA"}}]}
+                      // data.features[0] means get the first feature from the data array
+                      //data.features[0]?.properties?.formatted extracts the formatted address from the Geoapify response
+                      // if any part of the chain of data.features[0]?.properties?.formatted can't be accessed, this will will not throw an error.
+                      // It safely accesses nested properties without throwing an error if any part of the chain (features[0] or properties) is undefined or null.
+                      // formatted is the atual address returned by Geoapify
+                      // If there is no sddress foud, it returns "No Address Found"
+                      const formattedAddress = data.features[0]?.properties?.formatted || "No address found";
+                      //  Updates the HTML element with the id="address" to display the formatted extracted address
+                      document.getElementById("address").innerText = `Address: ${formattedAddress}`;
+
+                      // Call the getWeather function to build the url with the desired parameters and format the information that is passed back from the OpenMeteo API
+                      try {
+                          getWeather(lat, lon);
+                      } catch (error) {
+                          console.error(error);
+                          // Expected output: ReferenceError: nonExistentFunction is not defined
+                          // (Note: the exact output may be browser-dependent)
+                        }
+
+
+                  })
+                  // Catches and logs any errors during the data fetching process
+                  // If Geoapify doesnt return any data then return an error to the console
+                  .catch(error => {
+                      // Log the error to the console
+                      console.error("Error fetching Geoapify data:", error);
+                  });
+          }
+
+        function wmo_decode(code_number) {
+          const wmoWeatherCodes = new Map([
+    [0, "Clear sky"],
+    [1, "Mainly clear"],
+    [2, "Partly cloudy"],
+    [3, "Overcast"],
+    [4, "Thin dust or smoke"],
+    [5, "Haze"],
+    [6, "Widespread dust in suspension"],
+    [7, "Dust or sand raised by wind"],
+    [8, "Well-developed dust or sand whirls"],
+    [9, "Duststorm or sandstorm"],
+
+    [10, "Mist"],
+    [11, "Patches of shallow fog"],
+    [12, "More general fog, sky visible"],
+    [13, "More general fog, sky not visible"],
+
+    [14, "Precipitation within sight, but not reaching ground"],
+    [15, "Precipitation within sight, reaching ground"],
+    [16, "Thunderstorm within sight, no precipitation"],
+    [17, "Thunderstorm, precipitation within sight"],
+    [18, "Squalls"],
+    [19, "Funnel cloud (tornado or waterspout)"],
+
+    [20, "Drizzle, not freezing"],
+    [21, "Drizzle, freezing"],
+    [22, "Intermittent drizzle"],
+    [23, "Drizzle with rain"],
+    [24, "Rain, not freezing"],
+    [25, "Rain, freezing"],
+    [26, "Intermittent rain"],
+    [27, "Rain or drizzle with snow"],
+
+    [28, "Snow, not showering"],
+    [29, "Intermittent snow"],
+
+    [30, "Dust or sandstorm decreasing"],
+    [31, "Dust or sandstorm no change"],
+    [32, "Dust or sandstorm increasing"],
+
+    [33, "Blowing snow, low"],
+    [34, "Blowing snow, moderate or dense"],
+    [35, "Drifting snow, low"],
+    [36, "Drifting snow, moderate or dense"],
+
+    [37, "Thunderstorm without precipitation"],
+    [38, "Thunderstorm with slight or moderate precipitation"],
+    [39, "Thunderstorm with heavy precipitation"],
+
+    [40, "Fog or ice fog, sky visible"],
+    [41, "Fog or ice fog, sky not visible"],
+    [42, "Fog in past hour but now dissipated"],
+
+    [43, "Fog, sky visible, thin"],
+    [44, "Fog, sky visible, moderate to thick"],
+    [45, "Fog, sky not visible, thin"],
+    [46, "Fog, sky not visible, moderate to thick"],
+
+    [47, "Fog, depositing rime"],
+
+    [48, "Drizzle, not freezing, slight"],
+    [49, "Drizzle, not freezing, moderate or heavy"],
+    [50, "Drizzle, freezing, slight"],
+    [51, "Drizzle, freezing, moderate or heavy"],
+
+    [52, "Drizzle, slight, intermittent"],
+    [53, "Drizzle, slight, continuous"],
+    [54, "Drizzle, moderate, intermittent"],
+    [55, "Drizzle, moderate, continuous"],
+    [56, "Drizzle, heavy, intermittent"],
+    [57, "Drizzle, heavy, continuous"],
+
+    [58, "Rain and drizzle, slight"],
+    [59, "Rain and drizzle, moderate or heavy"],
+
+    [60, "Rain, not freezing, slight"],
+    [61, "Rain, not freezing, moderate"],
+    [62, "Rain, not freezing, heavy"],
+
+    [63, "Rain, slight, intermittent"],
+    [64, "Rain, slight, continuous"],
+    [65, "Rain, moderate, intermittent"],
+    [66, "Rain, moderate, continuous"],
+    [67, "Rain, heavy, intermittent"],
+    [68, "Rain, heavy, continuous"],
+
+    [69, "Rain or drizzle with snow"],
+
+    [70, "Intermittent snow, slight"],
+    [71, "Intermittent snow, moderate"],
+    [72, "Intermittent snow, heavy"],
+
+    [73, "Continuous snow, slight"],
+    [74, "Continuous snow, moderate"],
+    [75, "Continuous snow, heavy"],
+
+    [76, "Ice pellets, slight"],
+    [77, "Ice pellets, moderate"],
+    [78, "Ice pellets, heavy"],
+
+    [79, "Ice pellets, snow or rain mixed"],
+
+    [80, "Rain shower, slight"],
+    [81, "Rain shower, moderate"],
+    [82, "Rain shower, heavy"],
+
+    [83, "Rain and snow shower, slight"],
+    [84, "Rain and snow shower, moderate or heavy"],
+
+    [85, "Snow shower, slight"],
+    [86, "Snow shower, moderate or heavy"],
+
+    [87, "Snow pellets or small hail, slight"],
+    [88, "Snow pellets or small hail, moderate or heavy"],
+
+    [89, "Hail, slight"],
+    [90, "Hail, moderate or heavy"],
+
+    [91, "Thunderstorm with slight rain"],
+    [92, "Thunderstorm with moderate or heavy rain"],
+    [93, "Thunderstorm with slight snow"],
+    [94, "Thunderstorm with moderate or heavy snow"],
+
+    [95, "Thunderstorm, slight or moderate"],
+    [96, "Thunderstorm, slight hail"],
+    [97, "Thunderstorm, moderate or heavy hail"],
+    [98, "Thunderstorm with duststorm"],
+    [99, "Thunderstorm, very heavy hail"],
+]);
+
+// Example usage:
+//console.log(wmoWeatherCodes.get(80)); // Output: "Rain show
+        }
+
+
+        // This takes in an integer (the code) and returns the description and the url of the code as a tuple (description, url_for_icon)
+        function find_code(code) {
+            let wmo_descriptions = [];
+            // list of all weather codes from open meteo
+            const openMeteoWeatherCodes = new Map([
+              [0, "Clear sky"],
+              [1, "Mainly clear"],
+              [2, "Partly cloudy"],
+              [3, "Overcast"],
+              [45, "Fog"],
+              [48, "Depositing rime fog"],
+              [51, "Light drizzle"],
+              [53, "Moderate drizzle"],
+              [55, "Dense drizzle"],
+              [56, "Light freezing drizzle"],
+              [57, "Dense freezing drizzle"],
+              [61, "Slight rain"],
+              [63, "Moderate rain"],
+              [65, "Heavy rain"],
+              [66, "Light freezing rain"],
+              [67, "Heavy freezing rain"],
+              [71, "Slight snowfall"],
+              [73, "Moderate snowfall"],
+              [75, "Heavy snowfall"],
+              [77, "Snow grains"],
+              [80, "Slight rain showers"],
+              [81, "Moderate rain showers"],
+              [82, "Violent rain showers"],
+              [85, "Slight snow showers"],
+              [86, "Heavy snow showers"],
+              [95, "Thunderstorm"],
+              [96, "Thunderstorm with slight hail"],
+              [99, "Thunderstorm with heavy hail"]
+            ]);
+
+            return openMeteoWeatherCodes.get(code)
+        }
+
+        async function getWeather1(lat, lon) {
+            //const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,apparent_temperature,is_day,precipitation,wind_speed_10m,wind_direction_10m,wind_gusts_10m,&hourly=temperature_2m&daily=temperature_2m_max,temperature_2m_min,sunrise,sunset,apparent_temperature_max, apparent_temperature_min, wind_speed_10m_max, wind_gusts_10m_max, wind_direction_10m_dominant, uv_index_max,&temperature_unit=fahrenheit&timezone=auto`;
+            //const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=weather_code, temperature_2m,relative_humidity_2m,apparent_temperature,is_day,precipitation,cloud_cover,pressure_msl,wind_speed_10m,wind_direction_10m,wind_gusts_10m&hourly=weather_code, temperature_2m,relative_humidity_2m,dew_point_2m,apparent_temperature,precipitation_probability,wind_speed_10m,wind_gusts_10m,wet_bulb_temperature_2m,cape&daily=weather_code, temperature_2m_max,temperature_2m_min,apparent_temperature_max,apparent_temperature_min,sunrise,sunset,wind_speed_10m_max,wind_gusts_10m_max,wind_direction_10m_dominant,uv_index_max&temperature_unit=fahrenheit&wind_speed_unit=mph&precipitation_unit=inch&timezone=auto`;
+            alert(lat, lon);
+            //const url = 'https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=weather_code,temperature_2m,relative_humidity_2m,apparent_temperature,is_day,precipitation,cloud_cover,pressure_msl,wind_speed_10m,wind_direction_10m,wind_gusts_10m&hourly=weather_code,temperature_2m,relative_humidity_2m,dew_point_2m,apparent_temperature,precipitation_probability,wind_speed_10m,wind_gusts_10m,wet_bulb_temperature_2m,cape&daily=weather_code,temperature_2m_max,temperature_2m_min,apparent_temperature_max,apparent_temperature_min,sunrise,sunset,wind_speed_10m_max,wind_gusts_10m_max,wind_direction_10m_dominant,uv_index_max&temperature_unit=fahrenheit&wind_speed_unit=mph&precipitation_unit=inch&timezone=auto';
+            const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=weather_code,temperature_2m,relative_humidity_2m,apparent_temperature,is_day,precipitation,cloud_cover,pressure_msl,wind_speed_10m,wind_direction_10m,wind_gusts_10m&hourly=weather_code,temperature_2m,relative_humidity_2m,dew_point_2m,apparent_temperature,precipitation_probability,wind_speed_10m,wind_gusts_10m,wet_bulb_temperature_2m,cape&daily=weather_code,temperature_2m_max,temperature_2m_min,apparent_temperature_max,apparent_temperature_min,sunrise,sunset,wind_speed_10m_max,wind_gusts_10m_max,wind_direction_10m_dominant,uv_index_max&temperature_unit=fahrenheit&wind_speed_unit=mph&precipitation_unit=inch&timezone=auto`;
+            //const url_marine = 'https://marine-api.open-meteo.com/v1/marine?latitude={lat}&longitude={lon}&daily=wave_height_max&hourly=wave_height,sea_surface_temperature,sea_level_height_msl&current=sea_level_height_msl,sea_surface_temperature,wave_height';
+            const params = {
+	          "latitude": lat,
+	          "longitude": lon,
+	          "daily": ["temperature_2m_max", "temperature_2m_min", "apparent_temperature_max", "apparent_temperature_min", "sunrise", "sunset", "wind_speed_10m_max", "wind_gusts_10m_max", "wind_direction_10m_dominant", "uv_index_max"],
+	          "hourly": ["temperature_2m", "relative_humidity_2m", "dew_point_2m", "apparent_temperature", "precipitation_probability", "wind_speed_10m", "wind_gusts_10m", "wet_bulb_temperature_2m", "cape"],
+	          "current": ["temperature_2m", "relative_humidity_2m", "apparent_temperature", "is_day", "precipitation", "cloud_cover", "pressure_msl", "wind_speed_10m", "wind_direction_10m", "wind_gusts_10m"],
+	          "wind_speed_unit": "mph",
+	          "temperature_unit": "fahrenheit",
+	          "precipitation_unit": "inch"
+            };
+
+            // Convert the parameters to a URL-encoded string
+            // Convert the parameters to a URL-encoded string
+//const queryString = new URLSearchParams(
+//    Object.entries(params).flatMap(([key, value]) =>
+//        Array.isArray(value) ? value.map(v => [key, v]) : [[key, value]]
+//    )
+//).toString();
+
+            //const url = `https://api.open-meteo.com/v1/forecast?${queryString}`;
+
+
+            const marine_params = {
+	          "latitude": lat,
+	          "longitude": lon,
+	          "daily": "wave_height_max",
+	          "hourly": ["wave_height", "sea_level_height_msl", "sea_surface_temperature"],
+	          "current": ["wave_height", "sea_surface_temperature", "sea_level_height_msl"]
+            };
+
+            try {
+                const response = await fetch(url);
+                const data = await response.json();
+                alert(data.current);
+                //const marine_response = await fetch(url_marine);
+                //const marine_data = await marine_response.json();
+
+                const marine_url = "https://marine-api.open-meteo.com/v1/marine";
+                //const marineresponses = await fetchWeatherApi(marine_url, params);
+                //const marinedata = await marineresponses.json()
+                if (!data.hourly || !data.hourly.time) {
+                    throw new Error("Missing hourly data in API response");
+                }
+                //let current_weather = data.current;
+                //let daily_weather = data.daily;
+                //console.log(current_weather);
+                //console.log(daily_weather)
+                createWeatherChart1(data);
+
+            } catch (error) {
+                console.error("Error fetching weather:", error);
+                //document.getElementById("weather").innerHTML = "Failed to fetch weather data.";
+            }
+        }
+
+      function createWeatherChart1(weatherData) {
+        let current_weather = weatherData.current;
+        let hourly_weather = weatherData.hourly;
+        let daily_weather = weatherData.daily;
+        //let current_marine_conditions = marineData.current;
+        /*
+        // Parse weatherData if it's a string
+        if (typeof weatherData === 'string') {
+            try {
+                weatherData = JSON.parse(weatherData); // Convert string to JSON object
+            } catch (error) {
+                console.error("Error parsing weatherData as JSON:", error);
+                alert("Failed to process weather data.");
+                return;
+            }
+        }
+
+        // Validate the structure of weatherData
+        if (!weatherData || !weatherData.current_weather || !weatherData.hourly_forecast) {
+            console.error("Invalid weatherData structure. Received:", weatherData);
+            alert("Weather data is invalid.");
+            return;
+        }*/
+
+        // Extract current weather
+        const currentWeather = weatherData;
+
+        // Convert the wwmo code(s) to who description(s)
+        wmo_description_current = find_code(current_weather.weather_code);
+        wmo_description_daily = find_code(daily_weather.weather_code);
+        wmo_description_hourly = find_code(hourly_weather.weather_code);
+        //console.log("Current Weather:", weatherData)
+        //console.log("Current Weather:", currentWeather);
+
+        // Display current weather information
+        const currentWeatherElement = document.getElementById("current_weather");
+        currentWeatherElement.innerHTML = `
+            <p>Temperature: ${current_weather.temperature_2m} °F</p>
+            <p>Apparent Temperature: ${current_weather.apparent_temperature} °F</p>
+            <p>Chance of Precipitation: ${current_weather.precipitation} %</p>
+            <p>Surface Pressure: ${current_weather.surface_pressure} hPa</p>
+            <p>Wind Speed (10m): ${current_weather.wind_speed_10m} mph</p>
+            <!--<p>Wind Gusts (10m): ${current_weather.wind_gusts_10m} mph</p>-->
+            <p>Wind Direction (10m): ${current_weather.wind_direction_10m} °</p>
+            <p>Relative Humidity: ${current_weather.relative_humidity_2m} %RH</p>
+            <p>Weather Code: ${wmo_description_current} </p>
+        `;
+        const dailyForecastWeatherElement = document.getElementById("seven_day_forecast");
+
+        // Check if daily_weather exists and has data before updating the DOM
+        if (daily_weather && daily_weather.temperature_2m_max && daily_weather.temperature_2m_max.length > 0) {
+            dailyForecastWeatherElement.innerHTML = `
+
+
+            `;
+        } else {
+            dailyForecastWeatherElement.innerHTML = `<p>Daily forecast data not available.</p>`;
+        }
+        // Extract hourly forecast
+        let hourlyForecast;
+
+
+        // Extract labels and data for the chart
+        const labels = hourly_weather.time;
+        const data = hourly_weather.temperature_2m_max;
+        //console.log(current_weather.time);
+        //console.log(data);
+
+        // Create the chart
+        const ctx = document.getElementById('myChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Temperature ºF',
+                    data: data,
+                    borderWidth: 1,
+                    borderColor: 'rgba(75, 192, 192, 1)',
+                    backgroundColor: 'rgba(75, 192, 192, 0.2)'
+                }]
+            },
+            options: {
+                plugins: {
+                    title: {
+                        display: true,
+                        text: '7 Day Forecast',
+                        padding: {
+                            top: 10,
+                            bottom: 30
+                        },
+                        font: {
+                            size: 20
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            callback: function (value) {
+                                return value + 'ºF';
+                            }
+                        }
+                    }
+                }
+            }
+        });
+  }
+
+async function getWeather(lat, lon) {
+    var latitude = lat;
+    var longitude = lon;
+
+    // Fetch map.html and insert it into #map-container
+    fetch("https://tropicainnovations.pythonanywhere.com/static/METAR_map/airport_metar_map.html")
+        .then(response => response.text())
+        .then(html => {
+            document.getElementById("map-container").innerHTML = html;
+
+            setTimeout(() => {
+                // Wait for map to load before initializing
+                if (typeof L !== "undefined" && document.querySelector(".folium-map")) {
+                    console.log("Leaflet found. Updating map...");
+                    document.getElementById("mapFrame").src = `https://tropicainnovations.pythonanywhere.com/map?lat=${lat}&lon=${lon}`;
+
+                    var mapElement = document.querySelector(".folium-map");
+                    var mapId = mapElement.id; // Get the dynamically generated map ID
+
+                    var existingMap = L.map(mapId);
+                    existingMap.setView([latitude, longitude], 10); // Set correct location
+
+                    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                        attribution: '&copy; OpenStreetMap contributors'
+                    }).addTo(existingMap);
+
+                    L.marker([latitude, longitude]).addTo(existingMap)
+                        .bindPopup("User's Location")
+                        .openPopup();
+                } else {
+                    console.error("Leaflet map not found!");
+                }
+            }, 5000); // Ensure map HTML is loaded
+        })
+        .catch(error => console.error("Error loading map:", error));
+
+    // Fetch weather data from opem-meteo api
+    const url_wx_api = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=weather_code,wind_direction_10m,temperature_2m,dew_point_2m,relative_humidity_2m,apparent_temperature,wind_speed_10m,precipitation&hourly=temperature_2m,relative_humidity_2m,dew_point_2m,apparent_temperature,precipitation_probability,wind_speed_10m,wind_gusts_10m,wet_bulb_temperature_2m,cape&daily=weather_code,temperature_2m_max,temperature_2m_min,wind_speed_10m_max&temperature_unit=fahrenheit&wind_speed_unit=mph&timezone=auto`;
+    // Fetch backend info for the 5 closest points
+    const url_five_points_wx = `/`
+    try {
+        const response_api = await fetch(url_wx_api);
+        //const response_five_points = await fetch(five_points_wx);
+        const data_api = await response_api.json();
+        console.log(data_api);
+        //const data_five_points = await response_five_points.json();
+        const response_five_points = await fetch(url_five_points_wx, {
+  method: "POST",
+  headers: {
+    "Content-Type": "application/json"
+  },
+  body: JSON.stringify({ lat: latitude, lon: longitude })
+});
+const data_five_points = await response_five_points.json();
+        if (!data_api.current) {
+            throw new Error("No current weather data available.");
+        }
+
+    const temp_dial_svg = data_five_points.temp_dial;
+    const dew_dial_svg = data_five_points.dew_dial;
+    const wind_dial_svg = data_five_points.wind_dial;
+    const five_cities = data_five_points.closest_points_weather;
+    let daily_weather = url_wx_api.daily;
+    console.log("daily weather", daily_weather);
+    console.log("Full data_five_points:", data_five_points);
+
+    updateWeatherDisplay(data_api, five_cities);
+
+let currentConditionsHTML = `
+<div class="container d-flex justify-content-center">
+  <div class="d-flex flex-wrap justify-content-center gap-3">
+
+    <div class="card shadow-sm border-0" style="width: 32%;">
+      <div class="card-header text-white bg-success fw-bold text-center">
+        Current Temperature
+      </div>
+      <div class="card-body d-flex justify-content-center align-items-center" style = "background-color: white;">
+        ${temp_dial_svg}
+        ${daily_weather}
+      </div>
+    </div>
+
+    <div class="card shadow-sm border-0" style="width: 32%;">
+      <div class="card-header text-white bg-success fw-bold text-center">
+        Current Dewpoint
+      </div>
+      <div class="card-body d-flex justify-content-center align-items-center">
+        ${dew_dial_svg}
+      </div>
+    </div>
+
+    <div class="card shadow-sm border-0" style="width: 32%;">
+      <div class="card-header text-white bg-success fw-bold text-center">
+        Current Windspeed & Direction
+      </div>
+      <div class="card-body d-flex justify-content-center align-items-center">
+        ${wind_dial_svg}
+      </div>
+    </div>
+
+  </div>
+  </div>
+`;
+    // Add the dial SVG to the page
+    let temp_dial_html = '<div class="card border-primary mb-3" style="max-width: 30rem; "max-height: 30rem;><div class="card-header">Current Temperature</div><div class="card-body">'+ temp_dial_svg +'</div></div>';
+    let dew_dial_html = '<div class="card border-primary mb-3" style="max-width: 30rem;" "max-height: 30rem;><div class="card-header">Current Temperature</div><div class="card-body">'+ dew_dial_svg +'</div></div>';
+    let wind_dial_html = '<div class="card border-primary mb-3" style="max-width: 30rem;"><div class="card-header">Current Wind Speed and Direction</div><div class="card-body">'+ wind_dial_svg +'</div></div>';
+    //let temp_dial_html1 = '<div class="col-md-4 col-sm-6 mb-3"><div class="d-flex rounded shadow overflow-hidden" style="min-height: 70px;"><!-- Left: Label --><div class="d-flex align-items-center justify-content-center px-3 text-white" style="background-color: #26a69a; min-width: 80px;"><strong>Temp</strong></div><!-- Right: SVG content --><div class="d-flex align-items-center justify-content-center px-2 flex-grow-1" style="background-color: #4fc3f7;">${temp_dial_svg}</div></div></div>';
+    //document.getElementById("current_weather").innerHTML += temp_dial_html;
+    //document.getElementById("current_weather").innerHTML += dew_dial_html;
+    //document.getElementById("current_weather").innerHTML += wind_dial_html;
+    document.getElementById("current_weather").innerHTML += currentConditionsHTML;
+
+    } catch (error) {
+        console.error("Error fetching weather data:", error);
+    }
+}
+
+
+/*
+// Updates closest City Weather Cards
+function updateClosestCityWxCards(weatherDataFivePoints) {
+    let wx_cards_html = '';
+    wx_cards_html += '<h2> Weather in Cities Near Me</h2>';
+
+    for(const city in weatherDataFivePoints) {
+        wx_cards_html += '<div class="card border-primary mb-3" style="max-width: 18rem;"><div class="card-header">'+city+'</div><div class="card-body text-primary"><h5 class="card-title">Temperature:' + weatherDataFivePoints[city][4][0] + '</h5></div></div>';
+    }
+    return wx_cards_html;
+}
+*/
+
+function updateClosestCityWxCards(weatherDataFivePoints) {
+    let wx_cards_html = '';
+    wx_cards_html += '<h2>Weather in Cities Near Me</h2>';
+    wx_cards_html += '<div class="city_weather_row">'; // Bootstrap grid with spacing
+
+    for (const city in weatherDataFivePoints) {
+        wx_cards_html += `
+        <div class = "city_box">
+            <div class="card shadow-sm border-primary">
+                <div class="card-header bg-primary text-white">${city}</div>
+                <div class="card-body text-primary">
+                    <h5 class="card-title">Temperature: ${weatherDataFivePoints[city][4][0]}</h5>
+                </div>
+            </div>
+        </div>
+            <!--<div class="col-12 col-sm-6 col-md-4 col-lg-3">
+                <div class="card h-100 shadow-sm border-primary">
+                    <div class="card-header bg-primary text-white">${city}</div>
+                    <div class="card-body text-primary">
+                        <h5 class="card-title">Temperature: ${weatherDataFivePoints[city][4][0]}</h5>
+                    </div>
+                </div>
+            </div>-->`;
+    }
+
+    wx_cards_html += `</div>
+    <style>
+    .city_weather_row {
+  display: flex;
+  flex-wrap: wrap;
+  width: 100%;
+  gap: 0.5rem;
+  padding: 0.5rem;
+}
+
+.city_box {
+  flex: 1 0 0;
+  min-width: 0;
+  background-color: #007bff;
+  color: white;
+  border-radius: 8px;
+  padding: 0.5rem;
+  text-align: center;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+    </style>`; // close .row
+    return wx_cards_html;
+}
+
+
+
+
+function updateWeatherDisplay(weatherData, weatherData_five_points) {
+    const current_weather = weatherData.current;
+    const daily_weather = weatherData.daily;
+    const hourly_weather = weatherData.hourly;
+    const closest_cities_wx_info = weatherData_five_points;
+
+    if (!current_weather) {
+        console.error("No current weather data available.");
+        return;
+    }
+
+    if (closest_cities_wx_info) {
+        /*
+        const closest_cities_wx = document.getElementById('closest_cities_wx');
+        let closest_wx_html = '';
+        for (const city in weatherData_five_points) {
+            closest_wx_html += 'City: ' + city + ' Temperature: ' + weatherData_five_points[city][4][0] + '⁰F' + '<br>';
+        }
+        closest_cities_wx.innerHTML += closest_wx_html;
+        */
+        // create and populate Bootstrap cards for the weather fofor the closest towns near the user
+        wx_cards_html = updateClosestCityWxCards(weatherData_five_points);
+        // select the HTML element you want to change
+        wx_cards = document.getElementById('closest_cities_wx_cards');
+        // Update the HTML of the div to reflect all of the bootstrap cards
+        wx_cards.innerHTML = wx_cards_html;
+
+  // You can now use data.closest_location.city, .lat, .lon, etc. depending on the structure
+}
+else {
+    console.error("Closest cities weather data (weatherData_five_points) is missing or undefined.");
+    alert("Could not display nearby city weather data. Please try again later or check your connection.");
+}
+console.log("weatherData:", weatherData.daily);  // Show the whole object
+console.log("closest_points_weather:", closest_cities_wx_info);  // Directly log this part
+
+    const wmo_description_daily = find_code(daily_weather.weather_code);
+    console.log(wmo_description_daily);
+    /*
+    document.getElementById("current_weather").innerHTML = `
+        <div class="card" style="width: 18rem;">
+          <ul class="list-group list-group-flush">
+            <li class="list-group-item">${current_weather.temperature_2m} ºF</li>
+            <li class="list-group-item">${current_weather.apparent_temperature} ºF</li>
+            <li class="list-group-item"> ${current_weather.precipitation} in</li>
+            <li class="list-group-item">${current_weather.wind_speed_10m} mph</li>
+            <li class="list-group-item">${current_weather.relative_humidity_2m} % RH</li>
+            <li class="list-group-item">${wmo_description_current}</li>
+          </ul>
+        </div>
+        <p>Temperature: ${current_weather.temperature_2m} °F</p>
+        <p>Apparent Temperature: ${current_weather.apparent_temperature} °F</p>
+        <p>Precipitation: ${current_weather.precipitation} inches</p>
+        <p>Wind Speed: ${current_weather.wind_speed_10m} mph</p>
+        <p>Humidity: ${current_weather.relative_humidity_2m} %</p>
+        <p>Weather Condition: ${wmo_description_current}</p>
+    `;
+    */
+
+    // 🛠️ Update Forecast
+    let html = '';
+
+    // Get the current date
+    const currDate = new Date();
+    let day = currDate.getDay();
+    shifted_day_index = (day + 6) % 7;
+    daysOfWeek = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
+    html += `<div class="forecast-grid">`;
+    for (let i = 0; i < 7; i++) {
+        const dayIndex = (shifted_day_index + i) % 7;  // Wrap day of week index
+        html += `
+
+        <!--<div class="card" style="width: 14%;">
+          <div class="card shadow-sm border-0" style="max-width: 320px; border-radius: 1rem; overflow: hidden;">
+            <div class="card-header text-center text-white fw-semibold" style="background-color: #26c6da;">
+              <p>${daysOfWeek[dayIndex]}</p>
+            </div>
+            <div class="card-body d-flex align-items-center justify-content-center" style="width: 220px; height: 90px;">
+                <p>High Temp: ${daily_weather.temperature_2m_max[dayIndex]} °F</p>
+                <p>Low Temp: ${daily_weather.temperature_2m_min[dayIndex]} °F</p>
+                <p>Weather code: ${wmo_description_daily}</p>
+
+            </div>
+          </div>-->
+
+           <div class="forecast-day">
+            <h4>${daysOfWeek[dayIndex]}</h4>
+            <p>🌤${daily_weather.temperature_2m_max[dayIndex]}°F / ${daily_weather.temperature_2m_min[dayIndex]}°F</p>
+            <p>Weather code: ${wmo_description_daily}</p>
+          </div>
+          <style>
+
+            /*.forecast-day {
+              background: #f9f9f9;
+              border-radius: 10px;
+              box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+              padding: 1rem;
+              text-align: center;
+            }*/
+            .forecast-day {
+              flex: 1;
+              background: #f9f9f9;
+              border-radius: 10px;
+              box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+              padding: 1rem;
+              text-align: center;
+            }
+            </style>
+        `
+        ;
+        /*
+        html += <button class="collapsible">
+        <p>${daysOfWeek[day + 1]}</p>
+        <p>High Temp: ${daily_weather.temperature_2m_max[day]} °F</p>
+        <p>Low Temp: ${daily_weather.temperature_2m_min[day]} °F</p>
+        </button>;
+        html += <div class="content"><ul>;
+
+        for (let hour = 0; hour < 12; hour++) {
+            let index = day * 12 + hour;
+            html +=
+            <li>
+                <p>Temperature: ${hourly_weather.temperature_2m[index]} °F</p>
+                <p>Humidity: ${hourly_weather.relative_humidity_2m[index]}%</p>
+                <p>Wind Speed: ${hourly_weather.wind_speed_10m[index]} mph</p>
+                <p>Precipitation: ${hourly_weather.precipitation_probability[index]}%</p>
+            </li>;
+        }
+        */
+
+
+    }
+    html += `</div>
+                <style>
+                    .forecast-grid {
+                      display: flex;
+                      width: 100%;
+                      gap: 1rem;
+                    }
+
+                    .forecast-day {
+                      flex: 1;
+                      min-width: 0;
+                      background: #f9f9f9;
+                      border-radius: 10px;
+                      box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+                      padding: 1rem;
+                      text-align: center;
+                      box-sizing: border-box;
+                    }
+                </style>`;
+
+    document.getElementById('forecast-container').innerHTML = html;
+    addCollapsibleListeners();
+}
+
+/*
+    function createChart(daily_weather) {
+      const ctx = document.getElementById('myChart').getContext('2d');
+      new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: ["Day 1", "Day 2", "Day 3", "Day 4", "Day 5", "Day 6", "Day 7"],
+          datasets: [{
+            label: 'Max Temperature (°F)',
+            data: daily_weather.temperature_2m_max,
+            borderWidth: 2,
+            borderColor: 'rgba(255, 99, 132, 1)',
+            backgroundColor: 'rgba(255, 99, 132, 0.2)'
+          }]
+        },
+        options: {
+          responsive: true,
+          scales: {
+            y: { beginAtZero: false }
+          }
+        }
+      });
+    }*/
+
+/*function addCollapsibleListeners() {
+  document.querySelectorAll(".collapsible").forEach(button => {
+    button.addEventListener("click", function () {
+      this.classList.toggle("active");
+      const content = this.nextElementSibling;
+      if (content.style.display === "block") {
+        content.style.display = "none";
+      } else {
+        content.style.display = "block";
+      }
+    });
+  });
+}*/
+
+function addCollapsibleListeners() {
+  document.querySelectorAll(".collapsible").forEach(button => {
+    button.addEventListener("click", function () {
+      this.classList.toggle("active");
+      const content = this.nextElementSibling;
+
+      // Remove "display" or "block" logic, and instead use maxHeight
+      if (content.style.maxHeight && content.style.maxHeight !== "0px") {
+        content.style.maxHeight = null;
+      } else {
+        content.style.maxHeight = content.scrollHeight + "px";
+      }
+    });
+  });
+}
+function panMapIframeToUserLocation() {
+  const iframe = document.getElementById('mapFrame');
+
+  // Wait until iframe is fully loaded
+  iframe.onload = () => {
+    try {
+      const iframeWindow = iframe.contentWindow;
+
+      // Wait for Folium's map and Leaflet to be initialized inside iframe
+      setTimeout(() => {
+        if (iframeWindow && iframeWindow.L && iframeWindow.document.querySelector(".folium-map")) {
+          const mapElement = iframeWindow.document.querySelector(".folium-map");
+          const mapId = mapElement.id;
+          const map = iframeWindow[mapId]; // Folium exposes the map globally with its id
+
+          // Use browser geolocation
+          if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition((position) => {
+              const lat = position.coords.latitude;
+              const lon = position.coords.longitude;
+
+              // Pan and add marker
+              map.setView([lat, lon], 9);
+              iframeWindow.L.marker([lat, lon])
+                .addTo(map)
+                .bindPopup("You are here!")
+                .openPopup();
+            }, (error) => {
+              console.error("Geolocation error:", error);
+            });
+          }
+        } else {
+          console.error("Leaflet map not found inside iframe.");
+        }
+      }, 2000); // Adjust delay as needed depending on map loading time
+    } catch (err) {
+      console.error("Error accessing map inside iframe:", err);
+    }
+  };
+}
+panMapIframeToUserLocation();
+        </script>
+
+      </div>
+    </div>
+  </div>
+    <!-- jQuery first, then Popper.js, then Bootstrap JS -->
+  <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+</body>
+</html>

@@ -1,0 +1,1392 @@
+{% extends "layout.html" %}
+{% block body %}
+
+<!-- Allows the website to access the leaflet.js library for the map -->
+<head><link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+</head>
+<!-- Allows the website to access the bootstrap.js for animations and design -->
+<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+<!-- Company name -->
+<div style="display: flex; align-items: center;">
+    <img src="http://tropicainnovations.weebly.com/uploads/3/6/0/1/3601755/tropica-logo-png-001_orig.png" style="width:40px;height:40px;">
+    <h4 style="color: #00CCFF; font-size:40px;">Tropica Innovations</h4>
+</div>
+
+
+<!-- Website Banner -->
+<img src = "http://tropicainnovations.weebly.com/uploads/3/6/0/1/3601755/20230822-151810_orig.jpg" width="100%">
+<br>
+<head>
+<style>
+body {
+  background-color: lightblue;
+}
+</style>
+</head>
+<body>
+
+</body>
+</html>
+<br>
+<br>
+<hr class="gradient">
+<style>
+    hr.gradient {
+        height: 15px;
+        border: none;
+        border-radius: 6px;
+        background: linear-gradient(
+        90deg,
+        rgba(13, 8, 96, 1) 0%,
+        rgba(9, 9, 121, 1) 11%,
+        rgba(6, 84, 170, 1) 31%,
+        rgba(0, 255, 113, 1) 100%
+        );
+    }
+</style>
+<h2>Temperatures from Airports Around the World</h2>
+<hr class="gradient">
+<style>
+    hr.gradient {
+        height: 15px;
+        border: none;
+        border-radius: 6px;
+        background: linear-gradient(
+        90deg,
+        rgba(13, 8, 96, 1) 0%,
+        rgba(9, 9, 121, 1) 11%,
+        rgba(6, 84, 170, 1) 31%,
+        rgba(0, 255, 113, 1) 100%
+        );
+    }
+</style>
+<iframe src="/map"></iframe>
+    <style>
+        iframe {
+            width: 100%;
+            height: 1000px;
+            border: none;
+        }
+    </style>
+
+<hr class="gradient">
+<style>
+    hr.gradient {
+        height: 15px;
+        border: none;
+        border-radius: 6px;
+        background: linear-gradient(
+        90deg,
+        rgba(13, 8, 96, 1) 0%,
+        rgba(9, 9, 121, 1) 11%,
+        rgba(6, 84, 170, 1) 31%,
+        rgba(0, 255, 113, 1) 100%
+        );
+    }
+</style>
+
+<h2>Interactive Weather Map (Windy.com)</h2>
+<hr class="gradient">
+<style>
+    hr.gradient {
+        height: 15px;
+        border: none;
+        border-radius: 6px;
+        background: linear-gradient(
+        90deg,
+        rgba(13, 8, 96, 1) 0%,
+        rgba(9, 9, 121, 1) 11%,
+        rgba(6, 84, 170, 1) 31%,
+        rgba(0, 255, 113, 1) 100%
+        );
+    }
+</style>
+<html>
+    <head>
+        <meta
+            name="viewport"
+            content="width=device-width, initial-scale=1.0, shrink-to-fit=no"
+        />
+        <script src="https://unpkg.com/leaflet@1.4.0/dist/leaflet.js"></script>
+        <script src="https://api.windy.com/assets/map-forecast/libBoot.js"></script>
+        <style>
+            #windy {
+                width: 100%;
+                height: 500px;
+            }
+        </style>
+    </head>
+    <body>
+        <div id="windy"></div>
+        <script>
+const options = {
+    // Required: API key
+    key: 'dG99m7e2D2Jhv9uuEZgJ0mnD1fDUv2E3',
+
+    // Put additional console output
+    verbose: true,
+
+    // Optional: Initial state of the map
+    lat: 42.3601,
+    lon: -71.0589,
+    zoom: 7.5,
+};
+
+// Initialize Windy API
+windyInit(options, windyAPI => {
+    // windyAPI is ready, and contain 'map', 'store',
+    // 'picker' and other usefull stuff
+
+    const { map } = windyAPI;
+    // .map is instance of Leaflet map
+});    </script>
+    </body>
+</html>
+<hr class="gradient">
+<hr class="gradient">
+<style>
+    hr.gradient {
+        height: 15px;
+        border: none;
+        border-radius: 6px;
+        background: linear-gradient(
+        90deg,
+        rgba(13, 8, 96, 1) 0%,
+        rgba(9, 9, 121, 1) 11%,
+        rgba(6, 84, 170, 1) 31%,
+        rgba(0, 255, 113, 1) 100%
+        );
+    }
+</style>
+<h2 style="text-align: center;">7 Day Forecast</h2>
+<hr class="gradient">
+<style>
+    hr.gradient {
+        height: 15px;
+        border: none;
+        border-radius: 6px;
+        background: linear-gradient(
+        90deg,
+        rgba(13, 8, 96, 1) 0%,
+        rgba(9, 9, 121, 1) 11%,
+        rgba(6, 84, 170, 1) 31%,
+        rgba(0, 255, 113, 1) 100%
+        );
+    }
+</style>
+<br>
+
+<div class="tomorrow"
+     data-location-id=""
+     data-language="EN"
+     data-unit-system="IMPERIAL"
+     data-skin="light"
+     data-widget-type="upcoming"
+     style="padding-bottom:22px;position:relative;"
+>
+    <a
+            href="https://www.tomorrow.io/weather-api/"
+            rel="nofollow noopener noreferrer"
+            target="_blank"
+            style="position: absolute; bottom: 0; transform: translateX(-50%); left: 50%;"
+    >
+        <img
+                alt="Powered by the Tomorrow.io Weather API"
+                src="https://weather-website-client.tomorrow.io/img/powered-by.svg"
+                width="250"
+                height="18"
+        />
+    </a>
+</div>
+<br>
+
+
+<hr class="gradient">
+<style>
+    hr.gradient {
+        height: 15px;
+        border: none;
+        border-radius: 6px;
+        background: linear-gradient(
+        90deg,
+        rgba(13, 8, 96, 1) 0%,
+        rgba(9, 9, 121, 1) 11%,
+        rgba(6, 84, 170, 1) 31%,
+        rgba(0, 255, 113, 1) 100%
+        );
+    }
+</style>
+<h2 style="text-align: center;">Current Temperatures Around the United States</h2>
+<hr class="gradient">
+<style>
+    hr.gradient {
+        height: 15px;
+        border: none;
+        border-radius: 6px;
+        background: linear-gradient(
+        90deg,
+        rgba(13, 8, 96, 1) 0%,
+        rgba(9, 9, 121, 1) 11%,
+        rgba(6, 84, 170, 1) 31%,
+        rgba(0, 255, 113, 1) 100%
+        );
+    }
+</style>
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Weather Carousel</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.11.0/umd/popper.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"></script>
+    <script>
+        // Function to get the current day of the week
+        function getDayOfWeek(offset = 0) {
+            const daysOfWeek = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+            const currentDay = new Date().getDay();
+            return daysOfWeek[(currentDay + offset) % 7];
+        }
+
+        // Change the header text for a specific header
+        function changeHeaderText(headerId, offset) {
+            const header = document.getElementById(headerId);
+            const dayOfWeek = getDayOfWeek(offset);
+            header.innerHTML = `${dayOfWeek}'s Temperatures`;
+        }
+
+        // Function to change all headers on page load
+        function updateHeaders() {
+            changeHeaderText("weatherHeader_1", 1);
+            changeHeaderText("weatherHeader_2", 1);
+            changeHeaderText("weatherHeader_3", 2);
+            changeHeaderText("weatherHeader_4", 2);
+            changeHeaderText("weatherHeader_5", 3);
+            changeHeaderText("weatherHeader_6", 3);
+        }
+
+        // Call the function to update headers on page load
+        document.addEventListener("DOMContentLoaded", updateHeaders);
+    </script>
+</head>
+<body>
+    <div id="carouselExampleIndicators" class="carousel slide" data-ride="carousel">
+        <ol class="carousel-indicators">
+            <li data-target="#carouselExampleIndicators" data-slide-to="0" class="active"></li>
+            <li data-target="#carouselExampleIndicators" data-slide-to="1"></li>
+            <li data-target="#carouselExampleIndicators" data-slide-to="2"></li>
+            <li data-target="#carouselExampleIndicators" data-slide-to="3"></li>
+            <li data-target="#carouselExampleIndicators" data-slide-to="4"></li>
+            <li data-target="#carouselExampleIndicators" data-slide-to="5"></li>
+            <li data-target="#carouselExampleIndicators" data-slide-to="6"></li>
+        </ol>
+        <div class="carousel-inner">
+            <div class="carousel-item active">
+                <h2 id="weatherHeader_1">Tomorrow's Temperatures</h2>
+                <img class="d-block w-100" src="https://graphical.weather.gov/GraphicalNDFD.php?width=1000&timezone=EDT&sector=CONUS&element=t&n=4" alt="First slide">
+            </div>
+            <div class="carousel-item">
+                <h2 id="weatherHeader_2">Tomorrow's Temperatures</h2>
+                <img class="d-block w-100" src="https://graphical.weather.gov/GraphicalNDFD.php?width=1000&timezone=EDT&sector=CONUS&element=mint&n=1" alt="Second slide">
+            </div>
+            <div class="carousel-item">
+                <h2 id="weatherHeader_3">Tomorrow's Temperatures</h2>
+                <img class="d-block w-100" src="https://graphical.weather.gov/GraphicalNDFD.php?width=1000&timezone=EDT&sector=CONUS&element=maxt&n=2" alt="Third slide">
+            </div>
+            <div class="carousel-item">
+                <h2 id="weatherHeader_4">Tomorrow's Temperatures</h2>
+                <img class="d-block w-100" src="https://graphical.weather.gov/GraphicalNDFD.php?width=1000&timezone=EDT&sector=CONUS&element=mint&n=2" alt="Fourth slide">
+            </div>
+            <div class="carousel-item">
+                <h2 id="weatherHeader_5">Tomorrow's Temperatures</h2>
+                <img class="d-block w-100" src="https://graphical.weather.gov/GraphicalNDFD.php?width=1000&timezone=EDT&sector=CONUS&element=maxt&n=3" alt="Fifth slide">
+            </div>
+            <div class="carousel-item">
+                <h2 id="weatherHeader_6">Tomorrow's Temperatures</h2>
+                <img class="d-block w-100" src="https://graphical.weather.gov/GraphicalNDFD.php?width=1000&timezone=EDT&sector=CONUS&element=mint&n=3" alt="Sixth slide">
+            </div>
+        </div>
+        <a class="carousel-control-prev" href="#carouselExampleIndicators" role="button" data-slide="prev">
+            <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+            <span class="sr-only">Previous</span>
+        </a>
+        <a class="carousel-control-next" href="#carouselExampleIndicators" role="button" data-slide="next">
+            <span class="carousel-control-next-icon" aria-hidden="true"></span>
+            <span class="sr-only">Next</span>
+        </a>
+    </div>
+</body>
+</html>
+
+
+<hr class="gradient">
+<style>
+    hr.gradient {
+        height: 15px;
+        border: none;
+        border-radius: 6px;
+        background: linear-gradient(
+        90deg,
+        rgba(13, 8, 96, 1) 0%,
+        rgba(9, 9, 121, 1) 11%,
+        rgba(6, 84, 170, 1) 31%,
+        rgba(0, 255, 113, 1) 100%
+        );
+    }
+</style>
+<h3 style="text-align: center;">Sea Surface Temperatures</h3>
+<hr class="gradient">
+<style>
+    hr.gradient {
+        height: 15px;
+        border: none;
+        border-radius: 6px;
+        background: linear-gradient(
+        90deg,
+        rgba(13, 8, 96, 1) 0%,
+        rgba(9, 9, 121, 1) 11%,
+        rgba(6, 84, 170, 1) 31%,
+        rgba(0, 255, 113, 1) 100%
+        );
+    }
+</style>
+<img src = "https://www.ospo.noaa.gov/data/sst/contour/global.cf.gif" style="width: 100%">
+<img src = "https://www.ospo.noaa.gov/data/sst/contour/namerica.cf.gif" style="width: 100%">
+<!--https://www.ospo.noaa.gov/data/sst/bdn/daily/2024/BSST-DAY-NIGHT-2024-06-21.png-->
+
+<style>
+* {
+  box-sizing: border-box;
+}
+
+.column {
+  float: left;
+  width: 40.00%;
+  padding: 5px;
+}
+
+/* Clearfix (clear floats) */
+.row::after {
+  content: "";
+  clear: both;
+  display: table;
+}
+</style>
+<div class="row">
+    <div class="column">
+        <img src="https://www.ospo.noaa.gov/data/sst/contour/natlanti.cf.gif" alt="Snow" style="width:100%">
+    </div>
+    <div class="column">
+        <img src="https://www.ospo.noaa.gov/data/sst/contour/satlanti.cf.gif" alt="Forest" style="width:100%">
+    </div>
+</div>
+<div class="row">
+    <div class="column">
+        <img src="https://www.ospo.noaa.gov/data/sst/contour/gulfmex.cf.gif" alt="Snow" style="width:100%">
+    </div>
+    <div class="column">
+        <img src="https://www.ospo.noaa.gov/data/sst/contour/gulfcalf.cf.gif" alt="Forest" style="width:100%">
+    </div>
+</div>
+
+<img src = "https://www.ospo.noaa.gov/data/sst/contour/natlanti.cf.gif" style="width: 50%">
+<img src = "https://www.ospo.noaa.gov/data/sst/contour/satlanti.cf.gif" style="width: 50%">
+<img src = "https://www.ospo.noaa.gov/data/sst/contour/gulfmex.cf.gif" style="width: 50%">
+<img src = "https://www.ospo.noaa.gov/data/sst/contour/gulfcalf.cf.gif" style="width: 50%">
+
+<img src = "https://www.ospo.noaa.gov/data/cb/ssta/ssta.daily.current.png" style="width: 50%">
+<hr class="gradient">
+<style>
+    hr.gradient {
+        height: 15px;
+        border: none;
+        border-radius: 6px;
+        background: linear-gradient(
+        90deg,
+        rgba(13, 8, 96, 1) 0%,
+        rgba(9, 9, 121, 1) 11%,
+        rgba(6, 84, 170, 1) 31%,
+        rgba(0, 255, 113, 1) 100%
+        );
+    }
+</style>
+<h2>US and Canada Snowfall Maps</h2>
+
+<hr class="gradient">
+<style>
+    hr.gradient {
+        height: 15px;
+        border: none;
+        border-radius: 6px;
+        background: linear-gradient(
+        90deg,
+        rgba(13, 8, 96, 1) 0%,
+        rgba(9, 9, 121, 1) 11%,
+        rgba(6, 84, 170, 1) 31%,
+        rgba(0, 255, 113, 1) 100%
+        );
+    }
+</style>
+<img src = "https://www.star.nesdis.noaa.gov/smcd/emb/snow/GIF/comb_recent.png" style="width: 50%">
+<hr class="gradient">
+<style>
+    hr.gradient {
+        height: 15px;
+        border: none;
+        border-radius: 6px;
+        background: linear-gradient(
+        90deg,
+        rgba(13, 8, 96, 1) 0%,
+        rgba(9, 9, 121, 1) 11%,
+        rgba(6, 84, 170, 1) 31%,
+        rgba(0, 255, 113, 1) 100%
+        );
+    }
+</style>
+<h2>Local Tide Charts</h2>
+<hr class="gradient">
+<style>
+    hr.gradient {
+        height: 15px;
+        border: none;
+        border-radius: 6px;
+        background: linear-gradient(
+        90deg,
+        rgba(13, 8, 96, 1) 0%,
+        rgba(9, 9, 121, 1) 11%,
+        rgba(6, 84, 170, 1) 31%,
+        rgba(0, 255, 113, 1) 100%
+        );
+    }
+</style>
+<img src = "https://water.noaa.gov/resources/hydrographs/sctm3_hg.png" style="width: 100%">
+
+<hr class="gradient">
+<style>
+    hr.gradient {
+        height: 15px;
+        border: none;
+        border-radius: 6px;
+        background: linear-gradient(
+        90deg,
+        rgba(13, 8, 96, 1) 0%,
+        rgba(9, 9, 121, 1) 11%,
+        rgba(6, 84, 170, 1) 31%,
+        rgba(0, 255, 113, 1) 100%
+        );
+    }
+</style>
+
+<h3 style="text-align: center;">National Radars</h3>
+<hr class="gradient">
+<style>
+    hr.gradient {
+        height: 15px;
+        border: none;
+        border-radius: 6px;
+        background: linear-gradient(
+        90deg,
+        rgba(13, 8, 96, 1) 0%,
+        rgba(9, 9, 121, 1) 11%,
+        rgba(6, 84, 170, 1) 31%,
+        rgba(0, 255, 113, 1) 100%
+        );
+    }
+</style>
+
+<img src = "https://radar.weather.gov/ridge/standard/CONUS_loop.gif" style = "width:50%; display: block; margin-left: auto; margin-right: auto;">
+
+<hr class="gradient">
+<style>
+    hr.gradient {
+        height: 15px;
+        border: none;
+        border-radius: 6px;
+        background: linear-gradient(
+        90deg,
+        rgba(13, 8, 96, 1) 0%,
+        rgba(9, 9, 121, 1) 11%,
+        rgba(6, 84, 170, 1) 31%,
+        rgba(0, 255, 113, 1) 100%
+        );
+    }
+</style>
+<h3 style="text-align: center;">Local Radars</h3>
+<hr class="gradient">
+<style>
+    hr.gradient {
+        height: 15px;
+        border: none;
+        border-radius: 6px;
+        background: linear-gradient(
+        90deg,
+        rgba(13, 8, 96, 1) 0%,
+        rgba(9, 9, 121, 1) 11%,
+        rgba(6, 84, 170, 1) 31%,
+        rgba(0, 255, 113, 1) 100%
+        );
+    }
+</style>
+<img src="https://radar.weather.gov/ridge/standard/KBOX_0.gif" style = "width:50%; display: block; margin-left: auto; margin-right: auto;">
+
+<hr class="gradient">
+<style>
+    hr.gradient {
+        height: 15px;
+        border: none;
+        border-radius: 6px;
+        background: linear-gradient(
+        90deg,
+        rgba(13, 8, 96, 1) 0%,
+        rgba(9, 9, 121, 1) 11%,
+        rgba(6, 84, 170, 1) 31%,
+        rgba(0, 255, 113, 1) 100%
+        );
+    }
+</style>
+
+<h3 style="text-align: center;">National Fronts</h3>
+<hr class="gradient">
+<style>
+    hr.gradient {
+        height: 15px;
+        border: none;
+        border-radius: 6px;
+        background: linear-gradient(
+        90deg,
+        rgba(13, 8, 96, 1) 0%,
+        rgba(9, 9, 121, 1) 11%,
+        rgba(6, 84, 170, 1) 31%,
+        rgba(0, 255, 113, 1) 100%
+        );
+    }
+</style>
+
+<img src = "https://www.wpc.ncep.noaa.gov/basicwx/92fndfd.gif" style="width:50%; display: block; margin-left: auto; margin-right: auto;">
+
+<!-- Dynamically generated html cards
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bootstrap Cards Side by Side</title>
+
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <style>
+        .card {
+            margin-bottom: 20px; /* Add some margin between rows */
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="row">
+        {% for row in proxies %}
+        <div class="col-md-4">
+            <div class="card" style="height: 500px; border: 3px solid #73AD21; padding: 10px;">
+                <div class="card-body">
+                    <h4 class="card-title">Location: {{row[0]}}</h4>
+
+                    <img id="wx_icon_{{ loop.index }}" alt="Picture" style="width:auto;max-width:100%">
+
+
+                    <hr class="gradient">
+                    <style>
+                        hr.gradient {
+                        height: 3px;
+                        border: none;
+                        border-radius: 6px;
+                        background: linear-gradient(
+                        90deg,
+                        rgba(13, 8, 96, 1) 0%,
+                        rgba(9, 9, 121, 1) 11%,
+                        rgba(6, 84, 170, 1) 31%,
+                        rgba(0, 255, 113, 1) 100%
+                      );
+                    </style>
+
+                    <style>
+                        .slidecontainer {
+                            width: 100%;
+                            position: relative;
+                        }
+
+                        .slider {
+                            -webkit-appearance: none;
+                            width: 100%;
+                            height: 25px;
+                            background: linear-gradient(
+                                90deg,
+                                rgba(75,0,130, 1) 0%,
+                                rgba(9, 9, 121, 1) 25%,
+                                rgba(255,255,0, 1) 50%,
+                                rgba(255,165,0, 1) 75%,
+                                rgba(128,0,0,1) 100%
+                            );
+                            outline: none;
+                            opacity: 0.7;
+                            -webkit-transition: .2s;
+                            transition: opacity .2s;
+                        }
+
+                        .slider:hover {
+                            opacity: 1;
+                        }
+
+                        .slider::-webkit-slider-thumb {
+                            -webkit-appearance: none;
+                            appearance: none;
+                            width: 40px; /* Increased width for the thumb to accommodate the text */
+                            height: 40px; /* Increased height for the thumb to accommodate the text */
+                            background: #000;
+                            color: #fff;
+                            display: flex;
+                            align-items: center;
+                            justify-content: center;
+                            font-size: 14px;
+                            cursor: pointer;
+                        }
+
+                        .slider::-moz-range-thumb {
+                            width: 40px; /* Increased width for the thumb to accommodate the text */
+                            height: 40px; /* Increased height for the thumb to accommodate the text */
+                            background: #000;
+                            color: #fff;
+                            display: flex;
+                            align-items: center;
+                            justify-content: center;
+                            font-size: 14px;
+                            cursor: pointer;
+                        }
+                </style>
+                    <div class="slidecontainer">
+                        <p>Temperature: {{row[5][0]}} °F</p>
+                        <input type="range" min="-5" max="120" value={{row[5][0]}} class="slider" id="myRange">
+                    </div>
+
+                    <script>
+                        const slider = document.getElementById('myRange');
+
+                        function updateSliderValue() {
+                            slider.style.setProperty('--value', slider.value);
+                        }
+
+                        slider.addEventListener('input', updateSliderValue);
+
+                        updateSliderValue(); // Initial call to set the correct position
+                    </script>
+
+
+                    <style>
+                        hr.gradient {
+                        height: 3px;
+                        border: none;
+                        border-radius: 6px;
+                        background: linear-gradient(
+                        90deg,
+                        rgba(13, 8, 96, 1) 0%,
+                        rgba(9, 9, 121, 1) 11%,
+                        rgba(6, 84, 170, 1) 31%,
+                        rgba(0, 255, 113, 1) 100%
+                      );
+                    </style>
+
+                    <style>
+                        .slidecontainer {
+                            width: 100%;
+                            position: relative;
+                        }
+
+                        .slider {
+                            -webkit-appearance: none;
+                            width: 100%;
+                            height: 25px;
+                            background: linear-gradient(
+                                90deg,
+                                rgba(75,0,130, 1) 0%,
+                                rgba(9, 9, 121, 1) 25%,
+                                rgba(255,255,0, 1) 50%,
+                                rgba(255,165,0, 1) 75%,
+                                rgba(128,0,0,1) 100%
+                            );
+                            outline: none;
+                            opacity: 0.7;
+                            -webkit-transition: .2s;
+                            transition: opacity .2s;
+                        }
+
+                        .slider:hover {
+                            opacity: 1;
+                        }
+
+                        .slider::-webkit-slider-thumb {
+                            -webkit-appearance: none;
+                            appearance: none;
+                            width: 5px; /* Increased width for the thumb to accommodate the text */
+                            height: 40px; /* Increased height for the thumb to accommodate the text */
+                            background: #000;
+                            color: #fff;
+                            display: flex;
+                            align-items: center;
+                            justify-content: center;
+                            font-size: 14px;
+                            cursor: pointer;
+                        }
+
+                        .slider::-moz-range-thumb {
+                            width: 5px; /* Increased width for the thumb to accommodate the text */
+                            height: 40px; /* Increased height for the thumb to accommodate the text */
+                            background: #000;
+                            color: #fff;
+                            display: flex;
+                            align-items: center;
+                            justify-content: center;
+                            font-size: 14px;
+                            cursor: pointer;
+                        }
+                </style>
+                    <div class="slidecontainer">
+                        <p>Dewpoint: {{row[5][1]}} °F</p>
+                        <input type="range" min="-5" max="120" value={{row[5][1]}} class="slider" id="myRange">
+                    </div>
+
+                    <script>
+                        const slider = document.getElementById('myRange');
+
+                        function updateSliderValue() {
+                            slider.style.setProperty('--value', slider.value);
+                        }
+
+                        slider.addEventListener('input', updateSliderValue);
+
+                        updateSliderValue(); // Initial call to set the correct position
+                    </script>
+
+                    <div class="slidecontainer">
+                        <p>Relative Humidity: {{row[5][2]}}%RH</p>
+                        <input type="range" min="0" max="100" value={{row[5][2]}} class="slider" id="myRange">
+                    </div>
+
+                    <script>
+                        const slider = document.getElementById('myRange');
+
+                        function updateSliderValue() {
+                            slider.style.setProperty('--value', slider.value);
+                        }
+
+                        slider.addEventListener('input', updateSliderValue);
+
+                        updateSliderValue(); // Initial call to set the correct position
+
+                    </script>
+
+
+                    <style>
+                        hr.gradient {
+                        height: 3px;
+                        border: none;
+                        border-radius: 6px;
+                        background: linear-gradient(
+                        90deg,
+                        rgba(13, 8, 96, 1) 0%,
+                        rgba(9, 9, 121, 1) 11%,
+                        rgba(6, 84, 170, 1) 31%,
+                        rgba(0, 255, 113, 1) 100%
+                      );
+                    </style>
+
+                    <style>
+                        .slidecontainer {
+                            width: 100%;
+                            position: relative;
+                        }
+
+                        .slider {
+                            -webkit-appearance: none;
+                            width: 100%;
+                            height: 25px;
+                            background: linear-gradient(
+                                90deg,
+                                rgba(75,0,130, 1) 0%,
+                                rgba(9, 9, 121, 1) 25%,
+                                rgba(255,255,0, 1) 50%,
+                                rgba(255,165,0, 1) 75%,
+                                rgba(128,0,0,1) 100%
+                            );
+                            outline: none;
+                            opacity: 0.7;
+                            -webkit-transition: .2s;
+                            transition: opacity .2s;
+                        }
+
+                        .slider:hover {
+                            opacity: 1;
+                        }
+
+                        .slider::-webkit-slider-thumb {
+                            -webkit-appearance: none;
+                            appearance: none;
+                            width: 5px; /* Increased width for the thumb to accommodate the text */
+                            height: 40px; /* Increased height for the thumb to accommodate the text */
+                            background: #000;
+                            color: #fff;
+                            display: flex;
+                            align-items: center;
+                            justify-content: center;
+                            font-size: 14px;
+                            cursor: pointer;
+                        }
+
+                        .slider::-moz-range-thumb {
+                            width: 5px; /* Increased width for the thumb to accommodate the text */
+                            height: 40px; /* Increased height for the thumb to accommodate the text */
+                            background: #000;
+                            color: #fff;
+                            display: flex;
+                            align-items: center;
+                            justify-content: center;
+                            font-size: 14px;
+                            cursor: pointer;
+                        }
+                </style>
+                    <div class="slidecontainer">
+                        <p>Heat Index: {{row[5][3]}} °F</p>
+                        <input type="range" min="-5" max="120" value={{row[5][1]}} class="slider" id="myRange">
+                    </div>
+
+                    <script>
+                        const slider = document.getElementById('myRange');
+
+                        function updateSliderValue() {
+                            slider.style.setProperty('--value', slider.value);
+                        }
+
+                        slider.addEventListener('input', updateSliderValue);
+
+                        updateSliderValue(); // Initial call to set the correct position
+                    </script>
+                    <p class="card-text">Temperature: {{row[5][0]}} °F</p>
+
+                    <p class="card-text">Dewpoint: {{row[5][1]}} °F</p>
+                    <br>
+                    <p class="card-text">Wind Direction: {{row[1][0]}} ° From North</p>
+                    <p class="card-text">Wind: {{row[1][1]}} kts</p>
+                    <p class="card-text">htmlstuff: {{row[3]}} kts</p>
+                    <p class="card-text">High Last 6 Hours: {{row[6]}} kts</p>
+                    <p class="card-text">Low Last 6 Hours: {{row[7]}} kts</p>
+                    <p class="card-text">High Last 24 Hours: {{row[8]}} kts</p>
+                    <p class="card-text">High Last 24 Hours: {{row[9]}} kts</p>
+                    <p class="card-text">Max Wind Gust: {{row[1][2]}} kts</p>
+                    <p class="card-text">Visibility: {{row[2]}} miles</p>
+                    <p class="card-text">Weather Conditions: {{row[4]}}</p>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        {% for row in proxies %}
+        generateURL("{{ row[4][0] }}", '{{ loop.index }}');
+        {% endfor %}
+    });
+
+    function generateURL(cloudType, index) {
+        const baseURL = "http://tropicainnovations.weebly.com/uploads/";
+        console.log("Cloud type:", cloudType); // Check the value in the browser console
+        const imgId = "wx_icon_" + index;
+
+        let url;
+        if (cloudType === 'CLR') {
+            url = baseURL + "3/6/0/1/3601755/32_orig.png";
+        } else if(cloudType === 'FEW') {
+            url = baseURL + "3/6/0/1/3601755/34_orig.png";
+        } else if (cloudType === 'BKN') {
+            url = baseURL + "3/6/0/1/3601755/30_orig.png";
+        } else if (cloudType === 'OVC') {
+            url = baseURL + "3/6/0/1/3601755/26_orig.png";
+        } else if(cloudType === 'RA') {
+            url = baseURL + "3/6/0/1/3601755/11_orig.png";
+        } else if(cloudType == 'SCT') {
+        url = baseURL + "3/6/0/1/3601755/28_orig.png";
+        } else {
+            url = baseURL + "3/6/0/1/3601755/default.png";
+        }
+        document.getElementById(imgId).src = url;
+        console.log("Image URL:", url);
+    }
+</script>
+</body>
+-->
+<hr class="gradient">
+<style>
+    hr.gradient {
+        height: 15px;
+        border: none;
+        border-radius: 6px;
+        background: linear-gradient(
+        90deg,
+        rgba(13, 8, 96, 1) 0%,
+        rgba(9, 9, 121, 1) 11%,
+        rgba(6, 84, 170, 1) 31%,
+        rgba(0, 255, 113, 1) 100%
+        );
+    }
+</style>
+
+<h2>World Wide Satellites (Top: GOES EAST FULL DISK + Bottom: HIMAWARI 8 FULL DISK)</h2>
+
+<hr class="gradient">
+<style>
+    hr.gradient {
+        height: 15px;
+        border: none;
+        border-radius: 6px;
+        background: linear-gradient(
+        90deg,
+        rgba(13, 8, 96, 1) 0%,
+        rgba(9, 9, 121, 1) 11%,
+        rgba(6, 84, 170, 1) 31%,
+        rgba(0, 255, 113, 1) 100%
+        );
+    }
+</style>
+<img src="https://cdn.star.nesdis.noaa.gov/GOES16/ABI/FD/GEOCOLOR/latest.jpg" style="width:100%;height100%">
+<img style="-webkit-user-select: none; cursor: zoom-in;" src="http://rammb.cira.colostate.edu/ramsdis/online/images/latest_hi_res/himawari-8/full_disk_ahi_true_color.jpg" height="100%" width="100%">
+<hr class="gradient">
+<style>
+    hr.gradient {
+        height: 15px;
+        border: none;
+        border-radius: 6px;
+        background: linear-gradient(
+        90deg,
+        rgba(13, 8, 96, 1) 0%,
+        rgba(9, 9, 121, 1) 11%,
+        rgba(6, 84, 170, 1) 31%,
+        rgba(0, 255, 113, 1) 100%
+        );
+    }
+</style>
+<h2>Satellites: A Closer Look United States/CONUS</h2>
+<hr class="gradient">
+<style>
+    hr.gradient {
+        height: 15px;
+        border: none;
+        border-radius: 6px;
+        background: linear-gradient(
+        90deg,
+        rgba(13, 8, 96, 1) 0%,
+        rgba(9, 9, 121, 1) 11%,
+        rgba(6, 84, 170, 1) 31%,
+        rgba(0, 255, 113, 1) 100%
+        );
+    }
+</style>
+
+<img src = "https://cdn.star.nesdis.noaa.gov/GOES16/ABI/CONUS/GEOCOLOR/latest.jpg" style="width:100%; height100%">
+
+<hr class="gradient">
+<style>
+    hr.gradient {
+        height: 15px;
+        border: none;
+        border-radius: 6px;
+        background: linear-gradient(
+        90deg,
+        rgba(13, 8, 96, 1) 0%,
+        rgba(9, 9, 121, 1) 11%,
+        rgba(6, 84, 170, 1) 31%,
+        rgba(0, 255, 113, 1) 100%
+        );
+    }
+</style>
+<h2>Satellites: A Closer Look-Northern Plains USA</h2>
+<hr class="gradient">
+<style>
+    hr.gradient {
+        height: 15px;
+        border: none;
+        border-radius: 6px;
+        background: linear-gradient(
+        90deg,
+        rgba(13, 8, 96, 1) 0%,
+        rgba(9, 9, 121, 1) 11%,
+        rgba(6, 84, 170, 1) 31%,
+        rgba(0, 255, 113, 1) 100%
+        );
+    }
+</style>
+
+<img src = "https://cdn.star.nesdis.noaa.gov/GOES16/ABI/SECTOR/umv/GEOCOLOR/latest.jpg" style="width:100%; height100%">
+
+<hr class="gradient">
+<style>
+    hr.gradient {
+        height: 15px;
+        border: none;
+        border-radius: 6px;
+        background: linear-gradient(
+        90deg,
+        rgba(13, 8, 96, 1) 0%,
+        rgba(9, 9, 121, 1) 11%,
+        rgba(6, 84, 170, 1) 31%,
+        rgba(0, 255, 113, 1) 100%
+        );
+    }
+</style>
+<h2>Satellites: A Closer Look-Northeast USA</h2>
+<hr class="gradient">
+<style>
+    hr.gradient {
+        height: 15px;
+        border: none;
+        border-radius: 6px;
+        background: linear-gradient(
+        90deg,
+        rgba(13, 8, 96, 1) 0%,
+        rgba(9, 9, 121, 1) 11%,
+        rgba(6, 84, 170, 1) 31%,
+        rgba(0, 255, 113, 1) 100%
+        );
+    }
+</style>
+
+<img src = "https://cdn.star.nesdis.noaa.gov/GOES16/ABI/SECTOR/ne/GEOCOLOR/latest.jpg" style="width:100%; height100%">
+
+<hr class="gradient">
+<style>
+    hr.gradient {
+        height: 15px;
+        border: none;
+        border-radius: 6px;
+        background: linear-gradient(
+        90deg,
+        rgba(13, 8, 96, 1) 0%,
+        rgba(9, 9, 121, 1) 11%,
+        rgba(6, 84, 170, 1) 31%,
+        rgba(0, 255, 113, 1) 100%
+        );
+    }
+</style>
+<h2>Satellites: A Closer Look-Southern Plains USA</h2>
+<hr class="gradient">
+<style>
+    hr.gradient {
+        height: 15px;
+        border: none;
+        border-radius: 6px;
+        background: linear-gradient(
+        90deg,
+        rgba(13, 8, 96, 1) 0%,
+        rgba(9, 9, 121, 1) 11%,
+        rgba(6, 84, 170, 1) 31%,
+        rgba(0, 255, 113, 1) 100%
+        );
+    }
+</style>
+<img src = "https://cdn.star.nesdis.noaa.gov/GOES16/ABI/SECTOR/sp/GEOCOLOR/latest.jpg" style="width:100%; height100%">
+
+<hr class="gradient">
+<style>
+    hr.gradient {
+        height: 15px;
+        border: none;
+        border-radius: 6px;
+        background: linear-gradient(
+        90deg,
+        rgba(13, 8, 96, 1) 0%,
+        rgba(9, 9, 121, 1) 11%,
+        rgba(6, 84, 170, 1) 31%,
+        rgba(0, 255, 113, 1) 100%
+        );
+    }
+</style>
+<h2>Satellites: A Closer Look-Southeast USA</h2>
+<hr class="gradient">
+<style>
+    hr.gradient {
+        height: 15px;
+        border: none;
+        border-radius: 6px;
+        background: linear-gradient(
+        90deg,
+        rgba(13, 8, 96, 1) 0%,
+        rgba(9, 9, 121, 1) 11%,
+        rgba(6, 84, 170, 1) 31%,
+        rgba(0, 255, 113, 1) 100%
+        );
+    }
+</style>
+<img src = "https://cdn.star.nesdis.noaa.gov/GOES16/ABI/SECTOR/se/GEOCOLOR/latest.jpg" style="width:100%; height100%">
+<hr class="gradient">
+<style>
+    hr.gradient {
+        height: 15px;
+        border: none;
+        border-radius: 6px;
+        background: linear-gradient(
+        90deg,
+        rgba(13, 8, 96, 1) 0%,
+        rgba(9, 9, 121, 1) 11%,
+        rgba(6, 84, 170, 1) 31%,
+        rgba(0, 255, 113, 1) 100%
+        );
+    }
+</style>
+<h2>Satellites: A Closer Look-Canada</h2>
+<hr class="gradient">
+<style>
+    hr.gradient {
+        height: 15px;
+        border: none;
+        border-radius: 6px;
+        background: linear-gradient(
+        90deg,
+        rgba(13, 8, 96, 1) 0%,
+        rgba(9, 9, 121, 1) 11%,
+        rgba(6, 84, 170, 1) 31%,
+        rgba(0, 255, 113, 1) 100%
+        );
+    }
+</style>
+<img src = "https://cdn.star.nesdis.noaa.gov/GOES16/ABI/SECTOR/can/GEOCOLOR/latest.jpg" style="width:100%; height100%">
+
+<hr class="gradient">
+<style>
+    hr.gradient {
+        height: 15px;
+        border: none;
+        border-radius: 6px;
+        background: linear-gradient(
+        90deg,
+        rgba(13, 8, 96, 1) 0%,
+        rgba(9, 9, 121, 1) 11%,
+        rgba(6, 84, 170, 1) 31%,
+        rgba(0, 255, 113, 1) 100%
+        );
+    }
+</style>
+<h2>Satellites: A Closer Look-Alaska USA</h2>
+<hr class="gradient">
+<style>
+    hr.gradient {
+        height: 15px;
+        border: none;
+        border-radius: 6px;
+        background: linear-gradient(
+        90deg,
+        rgba(13, 8, 96, 1) 0%,
+        rgba(9, 9, 121, 1) 11%,
+        rgba(6, 84, 170, 1) 31%,
+        rgba(0, 255, 113, 1) 100%
+        );
+    }
+</style>
+<img src = "https://cdn.star.nesdis.noaa.gov/GOES18/ABI/SECTOR/ak/GEOCOLOR/latest.jpg" style="width:100%; height100%">
+
+<hr class="gradient">
+<style>
+    hr.gradient {
+        height: 15px;
+        border: none;
+        border-radius: 6px;
+        background: linear-gradient(
+        90deg,
+        rgba(13, 8, 96, 1) 0%,
+        rgba(9, 9, 121, 1) 11%,
+        rgba(6, 84, 170, 1) 31%,
+        rgba(0, 255, 113, 1) 100%
+        );
+    }
+</style>
+<h2>Satellites: Midwest USA</h2>
+<hr class="gradient">
+<style>
+    hr.gradient {
+        height: 15px;
+        border: none;
+        border-radius: 6px;
+        background: linear-gradient(
+        90deg,
+        rgba(13, 8, 96, 1) 0%,
+        rgba(9, 9, 121, 1) 11%,
+        rgba(6, 84, 170, 1) 31%,
+        rgba(0, 255, 113, 1) 100%
+        );
+    }
+</style>
+
+<img src = "https://cdn.star.nesdis.noaa.gov/GOES16/ABI/SECTOR/cgl/GEOCOLOR/latest.jpg" style="width:100%; height100%">
+
+<br>
+
+<script>
+        (function(d, s, id) {
+            if (d.getElementById(id)) {
+                if (window.__TOMORROW__) {
+                    window.__TOMORROW__.renderWidget();
+                }
+                return;
+            }
+            const fjs = d.getElementsByTagName(s)[0];
+            const js = d.createElement(s);
+            js.id = id;
+            js.src = "https://www.tomorrow.io/v1/widget/sdk/sdk.bundle.min.js";
+
+            fjs.parentNode.insertBefore(js, fjs);
+        })(document, 'script', 'tomorrow-sdk');
+</script>
+<br>
+<br>
+<!--<div class="tomorrow"
+     data-location-id="123102,114372,121327,2613090,118483,124797"
+     data-language="EN"
+     data-unit-system="IMPERIAL"
+     data-skin="light"
+     data-widget-type="current6"
+     style="padding-bottom:22px;position:relative;"
+>
+    <a
+            href="https://www.tomorrow.io/weather-api/"
+            rel="nofollow noopener noreferrer"
+            target="_blank"
+            style="position: absolute; bottom: 0; transform: translateX(-50%); left: 50%;"
+    >
+        <img
+                alt="Powered by the Tomorrow.io Weather API"
+                src="https://weather-website-client.tomorrow.io/img/powered-by.svg"
+                width="250"
+                height="18"
+        >
+</div>-->
+<hr class="gradient">
+<style>
+    hr.gradient {
+    height: 3px;
+    border: none;
+    border-radius: 6px;
+    background: linear-gradient(
+    90deg,
+    rgba(13, 8, 96, 1) 0%,
+    rgba(9, 9, 121, 1) 11%,
+    rgba(6, 84, 170, 1) 31%,
+    rgba(0, 255, 113, 1) 100%
+  );
+</style>
+<h3 style="text-align: center;">National Hurricane Center Outlook</h3>
+<hr class="gradient">
+<style>
+                        hr.gradient {
+                        height: 3px;
+                        border: none;
+                        border-radius: 6px;
+                        background: linear-gradient(
+                        90deg,
+                        rgba(13, 8, 96, 1) 0%,
+                        rgba(9, 9, 121, 1) 11%,
+                        rgba(6, 84, 170, 1) 31%,
+                        rgba(0, 255, 113, 1) 100%
+                      );
+    </style>
+
+    <img src="https://www.nhc.noaa.gov/xgtwo/two_atl_2d0.png" style="display: block;-webkit-user-select: none;margin: auto; max-width: 100%;">
+    <hr class="gradient">
+    <style>
+                        hr.gradient {
+                        height: 3px;
+                        border: none;
+                        border-radius: 6px;
+                        background: linear-gradient(
+                        90deg,
+                        rgba(13, 8, 96, 1) 0%,
+                        rgba(9, 9, 121, 1) 11%,
+                        rgba(6, 84, 170, 1) 31%,
+                        rgba(0, 255, 113, 1) 100%
+                      );
+    </style>
+<h3 style="text-align: center;">A Look Ahead Into The Future</h3>
+<hr class="gradient">
+<style>
+                        hr.gradient {
+                        height: 3px;
+                        border: none;
+                        border-radius: 6px;
+                        background: linear-gradient(
+                        90deg,
+                        rgba(13, 8, 96, 1) 0%,
+                        rgba(9, 9, 121, 1) 11%,
+                        rgba(6, 84, 170, 1) 31%,
+                        rgba(0, 255, 113, 1) 100%
+                      );
+    </style>
+<style>
+* {
+  box-sizing: border-box;
+}
+
+.column {
+  display: flex;
+  float: left;
+  width: 40.00%;
+  padding: 5px;
+}
+
+/* Clearfix (clear floats) */
+.row::after {
+  content: "";
+  clear: both;
+  display: table;
+}
+</style>
+<div class="row">
+    <div class="column">
+        <img src="https://www.cpc.ncep.noaa.gov/products/predictions/610day/610temp.new.gif" style="width:100%">
+    </div>
+    <div class="column">
+        <img src="https://www.cpc.ncep.noaa.gov/products/predictions/610day/610prcp.new.gif" style="width:100%">
+    </div>
+</div>
+
+<style>
+* {
+  box-sizing: border-box;
+}
+
+.column {
+  float: left;
+  width: 40.00%;
+  padding: 5px;
+}
+
+/* Clearfix (clear floats) */
+.row::after {
+  content: "";
+  clear: both;
+  display: table;
+}
+</style>
+<div class="row">
+    <div class="column">
+        <img src="https://www.cpc.ncep.noaa.gov/products/predictions/814day/814temp.new.gif" alt="Snow" style="width:100%">
+    </div>
+    <div class="column">
+        <img src="https://www.cpc.ncep.noaa.gov/products/predictions/814day/814prcp.new.gif" alt="Forest" style="width:100%">
+    </div>
+</div>
+<div class = "blue-box" style = "background-color: #00CCFF; height: 10%;">
+    <hr class="my-4"/>
+    <div class="d-flex justify-content-center">
+    </div>
+</div>
+{% endblock %}

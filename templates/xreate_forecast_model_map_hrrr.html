@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>City Temperature Map</title>
+  <meta charset="utf-8" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    #map { height: 100vh; }
+  </style>
+</head>
+<body>
+  <div id="map"></div>
+
+  <script>
+    //const map = L.map('map').setView([42.3601, 71.0589], 2);
+    const map = L.map('map').setView([42.3601, -71.0589], 10);  // Boston, zoomed in
+    L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      maxZoom: 50,
+    }).addTo(map);
+
+    function appendTempArr(localTime, validHours, temp_arr, dew_arr, wind_speed_arr, wind_angle_arr, cloud_cover_arr) {
+      let html = `<table style="width: 100%; border-collapse: collapse;">`;
+      html += `
+        <tr>
+          <th style="border-bottom: 1px solid black;">Hour</th>
+          <th style="border-bottom: 1px solid black;">Temp (°F)</th>
+          <th style="border-bottom: 1px solid black;">Dewpoint (°F)</th>
+          <th style="border-bottom: 1px solid black;">Wind Speed (kts)</th>
+          <th style="border-bottom: 1px solid black;">Wind Angle (⁰)</th>
+          <th style="border-bottom: 1px solid black;">Cloud Cover (%)</th>
+        </tr>`;
+
+      const hours = Object.keys(validHours);  // "5", "6", "7", etc.
+
+      for (let i = 0; i < temp_arr.length; i++) {
+        //const hour = hours[i];  // validHours: {"5": "2025-04-30 00:00:00", ...}
+        const hour = localTime[i];
+        const temp = temp_arr[i];
+        const dew = dew_arr[i];
+        const wind_speed = wind_speed_arr[i];
+        const wind_heading = wind_angle_arr[i];
+        const wind_angle = wind_angle_arr[i];
+        const cloud_cover = cloud_cover_arr[i];
+
+        html += `
+          <tr>
+            <td style="padding: 2px; text-align: center;">${hour}</td>
+            <td style="padding: 2px; text-align: center;">${Math.round(temp)}</td>
+            <td style="padding: 2px; text-align: center;">${dew !== undefined ? Math.round(dew) : "—"}</td>
+            <td style="padding: 2px; text-align: center;">${Math.round(wind_speed)}</td>
+            <td style="padding: 2px; text-align: center;">${wind_heading !== undefined ? Math.round(wind_heading) : "—"}</td>
+            <td style="padding: 2px; text-align: center;">${Math.round(cloud_cover)}</td>
+          </tr>
+        `;
+      }
+
+      html += `</table>`;
+      return html;
+    }
+
+    function appendTempDict(temp_dict, dew_dict, wind_speed_dict, wind_angle_dict, cloud_cover_dict) {
+      let html = `<table style="width: 100%; border-collapse: collapse;">`;
+      html += `
+        <tr>
+          <th style="border-bottom: 1px solid black;">Hour</th>
+          <th style="border-bottom: 1px solid black;">Temp (°F)</th>
+          <th style="border-bottom: 1px solid black;">Dewpoint (°F)</th>
+          <th style="border-bottom: 1px solid black;">Wind Speed (kts)</th>
+          <th style="border-bottom: 1px solid black;">Wind Angle (⁰)</th>
+          <th style="border-bottom: 1px solid black;">Cloud Cover (%)</th>
+
+        </tr>`;
+      for (let hour in temp_dict) {
+          const temp = temp_dict[hour];
+          const dew = dew_dict[hour];
+          const wind_speed = wind_speed_dict[hour];
+          const wind_heading = Object.keys(wind_angle_dict[hour])[0];
+          const wind_angle = wind_angle_dict[hour][wind_heading];
+
+          //const wind_heading_angle_dict = wind_angle_dict[hour];
+          const cloud_cover = cloud_cover_dict[hour];
+          html += `
+            <tr>
+              <td style="padding: 2px; text-align: center;">${hour}</td>
+              <td style="padding: 2px; text-align: center;">${Math.round(temp)}</td>
+              <td style="padding: 2px; text-align: center;">${dew !== undefined ? Math.round(dew) : "—"}</td>
+              <td style="padding: 2px; text-align: center;">${Math.round(wind_speed)}</td>
+              <td style="padding: 2px; text-align: center;"> ${wind_heading} ${Math.round(wind_angle)}</td>
+              <td style="padding: 2px; text-align: center;">${Math.round(cloud_cover)}</td>
+
+
+            </tr>
+          `;
+        }
+
+  html += `</table>`;
+  return html;
+}
+
+function getLocalTimeForZone(validHours, utcString, timeZone) {
+  try {
+    const fixedUtc = utcString.replace(" ", "T") + "Z"; // e.g., "2025-04-30 00:00:00" → "2025-04-30T00:00:00Z"
+    const utcDate = new Date(fixedUtc);
+    /*
+    const options = {
+      timeZone,
+      year: 'numeric', month: 'short', day: 'numeric',
+      hour: '2-digit', minute: '2-digit', second: '2-digit',
+      hour12: false
+    };
+    */
+    const options = {
+      timeZone,
+      day: 'numeric',
+      hour12: false
+    };
+    valid_hours = []
+    let initial_hour = parseInt(utcDate.toLocaleString('en-US', options));
+    return initial_hour;
+  } catch (err) {
+    return `Invalid: ${err.message}`;
+  }
+
+}
+
+function appendTempDictChart(temp_dict, dew_dict, city) {
+  let html = `<table style="width: 100%; border-collapse: collapse;">`;
+  html += `
+    <tr>
+      <th style="border-bottom: 1px solid black;">Hour</th>
+      <th style="border-bottom: 1px solid black;">Temp (°F)</th>
+      <th style="border-bottom: 1px solid black;">Dewpoint (°F)</th>
+    </tr>`;
+
+  for (let hour in temp_dict) {
+    const temp = temp_dict[hour];
+    const dew = dew_dict ? dew_dict[hour] : "—";
+
+    html += `
+      <tr>
+        <td style="padding: 2px; text-align: center;">${hour}</td>
+        <td style="padding: 2px; text-align: center;">${Math.round(temp)}</td>
+        <td style="padding: 2px; text-align: center;">${dew !== undefined ? Math.round(dew) : "—"}</td>
+      </tr>
+    `;
+  }
+  html += `</table><br>`;
+
+  // Add canvas only
+  const canvasId = `chart_${city.replace(/\s+/g, '_')}_${Math.floor(Math.random() * 100000)}`;
+  html += `<canvas id="${canvasId}" width="300" height="200"></canvas>`;
+
+  return { html, canvasId, temp_dict, dew_dict };
+}
+    function getTempColor(temp) {
+  if (temp <= 0)   return '#ffd6f5'; // very light pink
+  if (temp <= 10)  return '#ff99cc'; // light pink
+  if (temp <= 20)  return '#ff3399'; // pink
+  if (temp <= 30)  return '#66ccff'; // sky blue
+  if (temp <= 40)  return '#0066ff'; // blue
+  if (temp <= 50)  return '#00ff00'; // green
+  if (temp <= 60)  return '#ffff00'; // yellow
+  if (temp <= 70)  return '#ff9900'; // orange
+  if (temp <= 80)  return '#FF0000'; // red
+  if (temp <= 90)  return '#cc0000'; // vibrant red
+  return '#ffffff'; // 100°F or hotter → white
+}
+    /*function getTempColor(temp) {
+  if (temp <= -40) return '#001f7f'; // Very dark blue
+  if (temp <= -35) return '#0033cc';
+  if (temp <= -30) return '#0044ff';
+  if (temp <= -25) return '#3399ff';
+  if (temp <= -20) return '#66ccff';
+  if (temp <= -15) return '#99e6ff';
+  if (temp <= -10) return '#ccf2ff';
+  if (temp <= -5)  return '#e6f7ff';
+  if (temp <= 0)   return '#ffffff'; // White (freezing)
+  if (temp <= 5)   return '#ccffcc';
+  if (temp <= 10)  return '#99ff99';
+  if (temp <= 15)  return '#66ff66';
+  if (temp <= 20)  return '#33ff33';
+  if (temp <= 25)  return '#00ff00'; // Green
+  if (temp <= 30)  return '#66ff00';
+  if (temp <= 35)  return '#ccff00';
+  if (temp <= 40)  return '#ffff00'; // Yellow
+  if (temp <= 45)  return '#ffd700';
+  if (temp <= 50)  return '#ffb300';
+  if (temp <= 55)  return '#ff9900';
+  if (temp <= 60)  return '#ff8000';
+  if (temp <= 65)  return '#ff6600';
+  if (temp <= 70)  return '#ff4d00';
+  if (temp <= 75)  return '#ff3300';
+  if (temp <= 80)  return '#ff1a00';
+  if (temp <= 85)  return '#ff0000'; // Bright red
+  if (temp <= 90)  return '#e60000';
+  if (temp <= 95)  return '#cc0000';
+  if (temp <= 100) return '#b30000';
+  return '#800000'; // Dark red for >100
+}*/
+
+    function createThermometerSVG(temp) {
+      const fluidHeight = Math.max(0, Math.min(100, (temp + 40) / (120 + 40) * 160)); // Map -40°F to 120°F into 0–160px
+      const fluidY = 190 - fluidHeight;  // 190 is near bottom of tube
+
+      const gradientId = `grad_${Math.floor(Math.random() * 100000)}`;
+
+      return `
+        <svg width="80" height="200" viewBox="0 0 80 200" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <linearGradient id="${gradientId}" x1="0" y1="200" x2="0" y2="0" gradientUnits="userSpaceOnUse">
+              <stop offset="0%" stop-color="red" />
+              <stop offset="100%" stop-color="blue" />
+            </linearGradient>
+          </defs>
+          <rect x="30" y="20" width="20" height="160" fill="white" stroke="black" stroke-width="2" rx="10" ry="10"/>
+          <rect x="30" y="${fluidY}" width="20" height="${fluidHeight}" fill="url(#${gradientId})" />
+          <circle cx="40" cy="190" r="20" fill="url(#${gradientId})" stroke="black" stroke-width="2"/>
+          <text x="40" y="100" text-anchor="middle" font-size="18" fill="black">${Math.round(temp)}°F</text>
+        </svg>
+      `;
+    }
+
+    function getColorFromTemperature(temp) {
+      // Normalize temp between -40°F and 120°F
+      const minTemp = -40;
+      const maxTemp = 120;
+      const clampedTemp = Math.max(minTemp, Math.min(maxTemp, temp));
+      const ratio = (clampedTemp - minTemp) / (maxTemp - minTemp);
+
+      // Map ratio to a color (blue to red)
+      const r = Math.round(255 * ratio);
+      const g = Math.round(255 * (1 - Math.abs(ratio - 0.5) * 2)); // Green strongest around 50%
+      const b = Math.round(255 * (1 - ratio));
+
+      return `rgb(${r}, ${g}, ${b})`;
+    }
+
+    function convert_utc_to_local(validHours, timeZone) {
+       // validHours is len 12
+       // validHours = {"5": "2025-05-02 00:00:00", "6": "2025-05-02 12:00:00"}
+      const local_hours = [];
+      // Loop through every str(hour) in validHours
+      // Note that validHours is just {str(hour):str(utc_datetime_of_hour)}
+      // So key (hour) is just str(hour)
+      // Should loop through all 2 hours in this example shown above
+      for (const hour of Object.keys(validHours)) {
+        // validHours[hour] is just the value for str(hour) or the UTC datetime for that hour in string form
+        const utcString = validHours[hour];
+        // Some minor logic to manipulate the string date to get it to a form to change to an actual Date() javascript object
+        const fixedUtc = utcString.replace(" ", "T") + "Z";
+        // Create the Javascript Date() object: Date(utc_string)
+        const utcDate = new Date(fixedUtc);
+        // Specify that you only need the hour and it should be in 24 hour time and in numeric format with the timeZone string
+        const options = {
+          timeZone,
+          hour: 'numeric',
+          hour12: true
+        };
+        // Convert the utc Date Object to the local time and save as a String
+        const localHour = utcDate.toLocaleString('en-US', options);
+        // Push the hour (2 digits) to the local_hours arr
+        local_hours.push(localHour);
+      }
+
+      return local_hours;
+    }
+
+
+    fetch('https://tropicainnovations.pythonanywhere.com/static/hrrr_dump/hrrr_dump.json')
+    .then(res => res.json())
+    .then(data => {
+    //const valid_hours = data["valid_hours"];
+    // Example for validHours: {9: '2025-05-01 00:00:00', 15: '2025-05-01 00:00:00', 21: '2025-05-01 00:00:00', 27: '2025-05-01 00:00:00', 33: '2025-05-01 00:00:00', 39: '2025-05-01 00:00:00', 45: '2025-05-01 00:00:00', 51: '2025-05-01 00:00:00', 57: '2025-05-01 00:00:00', 63: '2025-05-01 00:00:00', 69: '2025-05-01 00:00:00', 75: '2025-05-01 00:00:00'}
+    const validHours = data["valid_hrs_dt"];
+    console.log(validHours)
+    // Example for citites: {Huayllati: Array(9), Duraznopampa: Array(9), Kimbiri: Array(9), Urb. Santo Domingo: Array(9), Cono Norte: Array(9), …}
+    const cities = data["cities"];
+    const utc_to_local_map = {};  // <-- define map outside loop
+    const local_hours = [];
+    // Loop through all of the cities in cities dict, where each city is {cityName: [lat, lon, Timezone, [temp_arr], [dew_arr], [wind_speed], [wind_angle], cloud_cover_arr]}
+    // Example of city is "Huayllati"
+    for (const city in cities) {
+        //console.log(city);
+        // values gets the information from that city from the cities dict
+        // cityInfo = [lat, lon, Timezone, [temp_arr], [dew_arr], [wind_speed], [wind_angle], cloud_cover_arr]
+        // typeof cityInfo == Array
+        const cityInfo = cities[city];
+        // Gets the 0th parameter of cityInfo: latitude (float)
+        const lat = cityInfo[0];
+        // Gets the 1st parameter of cityInfo: longitude (float)
+        const lon = cityInfo[1];
+        const city_name = cityInfo[2];
+        const country = cityinfo[3];
+        // Gets the 3rd parameter of cityInfo: timezone (string) (is in IANA format) ex "America/New_York"
+        const timezone = cityInfo[4];
+        // If the timezone for cityName is not in the utc_local_map already
+        if (!utc_to_local_map[timezone]) {
+            // Add the timezone as they key and onvert_utc_to_local(validHours, timezone) as the value
+            // Note that validHours is just {str(hour):str(utc_datetime_of_hour)}
+            utc_to_local_map[timezone] = convert_utc_to_local(validHours, timezone);
+        }
+        // Example of utc_to_local_map: {America/Lima: Array(12), Europe/Madrid: Array(12), Pacific/Port_Moresby: Array(12), Asia/Manila: Array(12), America/Chicago: Array(12),…}
+        //Example of utc_to_local_map: {'Africa/Abidjan': ['00', '00', '00', '00', '00', '00', '00', '00', '00', '00'], 'Africa/Accra':[...], ...}
+        const localTimes = utc_to_local_map[timezone];
+        //const temps = values[4];
+        //const firstHourKey = Object.keys(temps)[0];
+        const localTime = getLocalTimeForZone(validHours[firstHourKey], timezone);
+        const temps = cityInfo[5];
+        // Object.keys(validHours)[0] returns the first valid hour in ValidHour
+        const firstHourKey = parseInt(Object.keys(validHours)[0]);
+        let secondHourKey = 0;
+        timeDelta = 0
+        let firstHour = firstHourKey
+        if(parseInt(Object.keys(validHours)[1])) {
+            secondHourKey = parseInt(Object.keys(validHours)[1]);
+            timeDelta = secondHourKey - firstHourKey;
+        }
+        const utcString = validHours[firstHourKey];
+        const tempAtFirstHour = temps[firstHourKey];     // temps: numeric keys
+        //const firstHourKey = Object.keys(temps)[0];
+        //const utcString = validHours[firstHourKey];
+        const localTime = getLocalTimeForZone(validHours, utcString, timezone);
+        //const validKeys = Object.keys(validHours).map(k => parseInt(k)).sort((a, b) => a - b);
+        // const localTimes1 = convert_utc_to_local(validHours, timezone);
+
+
+        //const temps = values[4];
+        //const firstHourKey = Object.keys(validHours)[0];
+        //const utcString = validHours[firstHourKey];
+        //const localTime = getLocalTimeForZone(utcString, timezone);
+        //const temps = values[4];
+        const dews = cityInfo[6];
+        const wind_speed = cityInfo[6];
+        const wind_angle = cityInfo[7];
+        const cloud_cover = cityInfo[8];
+
+      if (lat !== null && lon !== null && temps !== undefined) {
+        //const firstHourKey = Object.keys(temps)[0];
+        const tempAtFirstHour = temps[0];
+
+        //const color = getTempColor(tempAtFirstHour);
+        const color = getColorFromTemperature(tempAtFirstHour);
+        const marker = L.circleMarker([lat, lon], {
+          radius: 8,
+          fillColor: color,
+          color: '#333',
+          weight: 1,
+          fillOpacity: 0.85
+        }).addTo(map);
+        marker.bindPopup(
+          `<b>${city}</b><br>
+          <p>${timezone}</p><br>
+          <p>Temp: ${tempAtFirstHour} °F </p><br>
+          <p>Lat: ${lat}, Lon: ${lon} </p>
+          ${appendTempArr(localTimes, validHours, temps, dews, wind_speed, wind_angle, cloud_cover)}
+`
+
+        );
+        //const svgThermometer = createThermometerSVG(tempAtFirstHour);
+        /*
+        marker.bindPopup(
+          `<b>${city}</b><br>` +
+          `Lat: ${lat}, Lon: ${lon}<br><br>` +
+           `<p>${tempAtFirstHour}</p>`
+        );*/
+
+      }
+    }
+  });
+  </script>
+</body>
+</html>

@@ -1,0 +1,84 @@
+{% extends "layout.html" %}
+{% blockbody %}
+<!DOCTYPE html>
+<html>
+<body>
+  <div class="slidecontainer">
+  <input type="range" min="1" max="100" value="25" class="slider" id="myRange" oninput="sliderChange(this.value)">
+  <output id="output">25</output> <!-- Initially displays 25 -->
+</div>
+<script>
+function sliderChange(value) {
+    document.getElementById('output').innerText = value; // Show slider value dynamically
+}
+function percentThroughSeason() {
+    const arr = [30.0, 31.0, 30.0, 30.0, 31.0, 30.0];
+    let date = new Date();
+    let currMonth = date.getMonth() - 6;
+    //console.log(currMonth);
+    let totalNumberOfDays = 0.0;
+    const sumOfDays = 182.0;
+    let currDayOfMonth = new Date().getDate();
+    //console.log(arr[0]);
+    for (i = 0.0; i <= currMonth; i++) {
+        //console.log(arr[i]);
+        totalNumberOfDays += arr[i];
+    }
+    let numDays = (totalNumberOfDays + currDayOfMonth) / 182;
+    let percentThrough = numDays * 100;
+    return percentThrough;
+
+}
+
+function myFunction() {
+    let seasonProgress = percentThroughSeason();
+    document.getElementById("myRange").value = seasonProgress;
+    sliderChange(seasonProgress);
+}
+window.onload = function() {
+	myFunction();
+}
+</script>
+<style>
+.slidecontainer {
+  width: 100%; /* Width of the outside container */
+}
+
+/* The slider itself */
+.slider {
+  -webkit-appearance: none;  /* Override default CSS styles */
+  appearance: none;
+  width: 100%; /* Full-width */
+  height: 25px; /* Specified height */
+  background: #d3d3d3; /* Grey background */
+  outline: none; /* Remove outline */
+  opacity: 0.7; /* Set transparency (for mouse-over effects on hover) */
+  -webkit-transition: .2s; /* 0.2 seconds transition on hover */
+  transition: opacity .2s;
+}
+
+/* Mouse-over effects */
+.slider:hover {
+  opacity: 1; /* Fully shown on mouse-over */
+}
+
+/* The slider handle (use -webkit- (Chrome, Opera, Safari, Edge) and -moz- (Firefox) to override default look) */
+.slider::-webkit-slider-thumb {
+  -webkit-appearance: none; /* Override default look */
+  appearance: none;
+  width: 5px; /* Set a specific slider handle width */
+  height: 25px; /* Slider handle height */
+  background: #04AA6D; /* Green background */
+  cursor: pointer; /* Cursor on hover */
+}
+
+.slider::-moz-range-thumb {
+  width: 5px; /* Set a specific slider handle width */
+  height: 25px; /* Slider handle height */
+  background: #04AA6D; /* Green background */
+  cursor: pointer; /* Cursor on hover */
+}
+</style>
+</body>
+</html>
+{% endbody %}

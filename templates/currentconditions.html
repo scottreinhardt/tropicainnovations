@@ -1,0 +1,35 @@
+{% extends "layout.html" %}
+
+{% block body %}
+<h4>Current Weather Conditions Map</h4>
+<hr class="my-4"/>
+<h4>Satellite Links</h4>
+<table class = "satellite">
+    <thead>
+        <tr>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <th scope="row">GOES</th>
+            <td><a href = "https://weather.msfc.nasa.gov/goes/abi/goesEastconusband02.html" class="btn btn-success">Goes East 3 km Previous</a></td>
+            <td><a href = "https://www.star.nesdis.noaa.gov/goes/conus.php?sat=G16" class="btn btn-success">GOES East</a></td>
+            <td><a href = "https://www.star.nesdis.noaa.gov/goes/fulldisk.php?sat=G17" class = "btn btn-success">GOES West</a></td>
+        </tr>
+        <tr>
+            <th scope="row">Artic</th>
+            <td><a href = "https://www.ospo.noaa.gov/Products/imagery/arctic/" class="btn btn-success">Artic</a></td>
+        </tr>
+        <tr>
+            <th scope="row">Himiwari</th>
+            <td><a href = "https://www.data.jma.go.jp/mscweb/data/himawari/" class = "btn btn-success">Himawari 8</a></td>
+            <td> <a href = "https://himawari8.nict.go.jp" class = "btn btn-success">Himawari 8 Full Disk Real Time</a></td>
+        </tr>
+    </tbody>
+</table>
+<hr class="my-4"/>
+<hr class="my-4"/>
+<a href = "https://www.nohrsc.noaa.gov/nsa/" class = "btn btn-success">US Snow Pack</a>
+<a href = "https://coastalwatertemperatureguide-noaa.hub.arcgis.com" class = "btn btn-success">Water Temperatures</a>
+
+{% endblock %}

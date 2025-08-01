@@ -1,0 +1,129 @@
+<?php
+// Replace with your own API KEY
+define("API_KEY", "YOUR API KEY")
+?>
+
+<!DOCTYPE html>
+<html>
+
+<!-- Demo Styles -->
+<style>
+    html,
+    body {
+        margin: 0;
+        padding: 0;
+    }
+
+    body {
+        background-color: #FFF;
+        font-family: Helvetica, Arial,
+            "Lucida Grande", sans-serif;
+    }
+
+    #mapDivId {
+        margin: 25px 10px;
+        max-width: 640px;
+        min-height: 380;
+    }
+
+    #buttonID:disabled {
+        background: #6c88d2;
+    }
+
+    #buttonID {
+        background: #33E6FF;
+        border: #4633FF 2px solid;
+        border-radius: 2px;
+        color: #FFF;
+        cursor: pointer;
+        display: block;
+        font-size: 0.8em;
+        padding: 15px 35px;
+    }
+</style>
+
+<body>
+    <h2>
+        How to Get User Location
+        using Google Map API
+    </h2>
+
+    <div id="buttonDivID">
+        <button id="buttonID"
+            onClick="getLocation()">
+            Click for Location
+        </button>
+    </div>
+
+    <div id="mapDivId"></div>
+
+    <script src=
+"https://maps.googleapis.com/maps/api/js?key=<?php echo API_KEY; ?>&callback=initMap"
+        async defer>
+    </script>
+
+<script type="text/javascript">
+
+        var map;
+        function initMap() {
+
+            /* Access of single map object instance*/
+            var mapContainer = document
+                .getElementById("mapDivId");
+
+            var coordinates = new
+                google.maps.LatLng(17.457427, 78.284296);
+
+            var defaultOptions = {
+                center: coordinates,
+
+                /* Setting the initial resolution */
+                zoom: 4
+            }
+
+            map = new google.maps.Map(
+                    mapContainer, defaultOptions);
+        }// end initMap() function
+
+        function getLocation() {
+            document.getElementById(
+                "buttonID").disabled = true;
+
+            document.getElementById(
+                "buttonID").innerHTML = "Executing..";
+
+            if ("geolocation" in navigator) {
+                navigator.geolocation
+                .getCurrentPosition(function (position) {
+                    var currentLatitude
+                        = position.coords.latitude;
+
+                    var currentLongitude
+                        = position.coords.longitude;
+
+                    var infoLatLang = "Latitude: "
+                        + currentLatitude +
+                        "<br>Longitude: " +
+                        currentLongitude;
+
+                    var infoContent =
+                        new google.maps.InfoWindow
+                        ({ map: map, content: infoLatLang });
+
+                    var currentLocation = {
+                        lat: currentLatitude,
+                        lng: currentLongitude
+                    };
+
+                    infoContent.setPosition(
+                            currentLocation);
+
+                    document.getElementById("buttonID")
+                        .style.display = 'none';
+                });
+            }
+        }// end function getLocation()
+    </script>
+</body>
+
+</html>

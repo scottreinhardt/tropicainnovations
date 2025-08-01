@@ -1,0 +1,252 @@
+{% extends "layout.html" %}
+{% block body %}
+<br>
+<br>
+<div class="container">
+        <h1>Enter Your Location</h1>
+        <form method="POST" action="/myweather">
+            <div class="form-group">
+                <label for="location">Location:</label>
+                <input type="text" name="location" class="form-control" id="location">
+            </div>
+            <button type="submit" class="btn btn-primary">Submit</button>
+        </form>
+    </div>
+<div class="container">
+    <div class="row">
+        {% for row in proxies %}
+        <div class="col-md-4">
+            <div class="card" style="height: 500px; border: 3px solid #73AD21; padding: 10px;">
+                <div class="card-body">
+                    <h4 class="card-title">Location: {{row[0]}}</h4>
+                    <!-- Unique id for each image -->
+                    <img id="wx_icon_{{ loop.index }}" alt="Picture" style="width:auto;max-width:100%">
+                    <!--Leaflet Map-->
+
+                    <hr class="gradient">
+                    <style>
+                        hr.gradient {
+                        height: 3px;
+                        border: none;
+                        border-radius: 6px;
+                        background: linear-gradient(
+                        90deg,
+                        rgba(13, 8, 96, 1) 0%,
+                        rgba(9, 9, 121, 1) 11%,
+                        rgba(6, 84, 170, 1) 31%,
+                        rgba(0, 255, 113, 1) 100%
+                      );
+                    </style>
+                    <!-- Slider to represent temperature -->
+                    <style>
+                        .slidecontainer {
+                            width: 100%;
+                            position: relative;
+                        }
+
+                        .slider {
+                            -webkit-appearance: none;
+                            width: 100%;
+                            height: 25px;
+                            background: linear-gradient(
+                                90deg,
+                                rgba(75,0,130, 1) 0%,
+                                rgba(9, 9, 121, 1) 25%,
+                                rgba(255,255,0, 1) 50%,
+                                rgba(255,165,0, 1) 75%,
+                                rgba(128,0,0,1) 100%
+                            );
+                            outline: none;
+                            opacity: 0.7;
+                            -webkit-transition: .2s;
+                            transition: opacity .2s;
+                        }
+
+                        .slider:hover {
+                            opacity: 1;
+                        }
+
+                        .slider::-webkit-slider-thumb {
+                            -webkit-appearance: none;
+                            appearance: none;
+                            width: 40px; /* Increased width for the thumb to accommodate the text */
+                            height: 40px; /* Increased height for the thumb to accommodate the text */
+                            background: #000;
+                            color: #fff;
+                            display: flex;
+                            align-items: center;
+                            justify-content: center;
+                            font-size: 14px;
+                            cursor: pointer;
+                        }
+
+                        .slider::-moz-range-thumb {
+                            width: 40px; /* Increased width for the thumb to accommodate the text */
+                            height: 40px; /* Increased height for the thumb to accommodate the text */
+                            background: #000;
+                            color: #fff;
+                            display: flex;
+                            align-items: center;
+                            justify-content: center;
+                            font-size: 14px;
+                            cursor: pointer;
+                        }
+                </style>
+                    <div class="slidecontainer">
+                        <p>Temperature: {{row[1]}} °F</p>
+                        <input type="range" min="-5" max="120" value={{row[1]}} class="slider" id="myRange">
+                    </div>
+
+                    <script>
+                        const slider = document.getElementById('myRange');
+
+                        function updateSliderValue() {
+                            slider.style.setProperty('--value', slider.value);
+                        }
+
+                        slider.addEventListener('input', updateSliderValue);
+
+                        updateSliderValue(); // Initial call to set the correct position
+                    </script>
+
+                    <!-- Dewpoint Slider -->
+                    <style>
+                        hr.gradient {
+                        height: 3px;
+                        border: none;
+                        border-radius: 6px;
+                        background: linear-gradient(
+                        90deg,
+                        rgba(13, 8, 96, 1) 0%,
+                        rgba(9, 9, 121, 1) 11%,
+                        rgba(6, 84, 170, 1) 31%,
+                        rgba(0, 255, 113, 1) 100%
+                      );
+                    </style>
+                    <!-- Slider to represent temperature -->
+                    <style>
+                        .slidecontainer {
+                            width: 100%;
+                            position: relative;
+                        }
+
+                        .slider {
+                            -webkit-appearance: none;
+                            width: 100%;
+                            height: 25px;
+                            background: linear-gradient(
+                                90deg,
+                                rgba(75,0,130, 1) 0%,
+                                rgba(9, 9, 121, 1) 25%,
+                                rgba(255,255,0, 1) 50%,
+                                rgba(255,165,0, 1) 75%,
+                                rgba(128,0,0,1) 100%
+                            );
+                            outline: none;
+                            opacity: 0.7;
+                            -webkit-transition: .2s;
+                            transition: opacity .2s;
+                        }
+
+                        .slider:hover {
+                            opacity: 1;
+                        }
+
+                        .slider::-webkit-slider-thumb {
+                            -webkit-appearance: none;
+                            appearance: none;
+                            width: 5px; /* Increased width for the thumb to accommodate the text */
+                            height: 40px; /* Increased height for the thumb to accommodate the text */
+                            background: #000;
+                            color: #fff;
+                            display: flex;
+                            align-items: center;
+                            justify-content: center;
+                            font-size: 14px;
+                            cursor: pointer;
+                        }
+
+                        .slider::-moz-range-thumb {
+                            width: 5px; /* Increased width for the thumb to accommodate the text */
+                            height: 40px; /* Increased height for the thumb to accommodate the text */
+                            background: #000;
+                            color: #fff;
+                            display: flex;
+                            align-items: center;
+                            justify-content: center;
+                            font-size: 14px;
+                            cursor: pointer;
+                        }
+                </style>
+                    <div class="slidecontainer">
+                        <p>Dewpoint: {{row[2]}} °F</p>
+                        <input type="range" min="-5" max="120" value={{row[2]}} class="slider" id="myRange">
+                    </div>
+
+                    <script>
+                        const slider = document.getElementById('myRange');
+
+                        function updateSliderValue() {
+                            slider.style.setProperty('--value', slider.value);
+                        }
+
+                        slider.addEventListener('input', updateSliderValue);
+
+                        updateSliderValue(); // Initial call to set the correct position
+                    </script>
+
+            <script>
+                        const slider = document.getElementById('myRange');
+
+                        function updateSliderValue() {
+                            slider.style.setProperty('--value', slider.value);
+                        }
+
+                        slider.addEventListener('input', updateSliderValue);
+
+                        updateSliderValue(); // Initial call to set the correct position
+                    </script>
+                    <!--<p class="card-text">Temperature: {{row[5][0]}} °F</p>-->
+
+                    <!--<p class="card-text">Dewpoint: {{row[5][1]}} °F</p>
+                    <br>
+                    <p class="card-text">Wind Direction: {{row[1][0]}} ° From North</p>
+                    <p class="card-text">Wind: {{row[1][1]}} kts</p>
+                    <p class="card-text">htmlstuff: {{row[3]}} kts</p>-->
+                    <!--<p class="card-text">High Last 6 Hours: {{row[6]}} kts</p>
+                    <p class="card-text">Low Last 6 Hours: {{row[7]}} kts</p>
+                    <p class="card-text">High Last 24 Hours: {{row[8]}} kts</p>
+                    <p class="card-text">High Last 24 Hours: {{row[9]}} kts</p>
+                    <p class="card-text">Max Wind Gust: {{row[1][2]}} kts</p>
+                    <p class="card-text">Visibility: {{row[2]}} miles</p>
+                    <p class="card-text">Weather Conditions: {{row[4]}}</p>-->
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+<!--
+<form action="/action_page.php">
+  <label for="location">Please Enter Your City, State:</label><br>
+  <input type="text" id="location" name="location"<br>
+  <input type="submit" value="Submit">
+</form> -->
+<!--
+    <script type="text/JavaScript">
+        function showMessage(){
+            var message = document.getElementById("message").value;
+            display_message.innerHTML= message;
+        }
+    </script>-->
+</head>
+<body>
+<iframe src="/map"></iframe>
+    <style>
+        iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+    </style>
+{% endblock %}

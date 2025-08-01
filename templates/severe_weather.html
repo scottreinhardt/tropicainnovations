@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<h4 style="color: #00CCFF; font-size:40px;">Tropica Innovations</h4>
+<br>
+{% extends "layout.html" %}
+
+{% block body %}
+
+<h1>Latest News Headlines</h1>
+<ul>
+    {% for key, value in superDict.items() %}
+    <li>{{ key }}: {{ value }}</li>
+    {% endfor %}
+</ul>
+<html lang="en">
+<hr class="gradient">
+<style>
+    hr.gradient {
+    height: 3px;
+    border: none;
+    border-radius: 6px;
+    background: linear-gradient(
+    90deg,
+    rgba(13, 8, 96, 1) 0%,
+    rgba(9, 9, 121, 1) 11%,
+    rgba(6, 84, 170, 1) 31%,
+    rgba(0, 255, 113, 1) 100%
+  );
+</style>
+<h2>A Look into the Atmosphere</h2>
+<hr class="gradient">
+<style>
+    hr.gradient {
+    height: 3px;
+    border: none;
+    border-radius: 6px;
+    background: linear-gradient(
+    90deg,
+    rgba(13, 8, 96, 1) 0%,
+    rgba(9, 9, 121, 1) 11%,
+    rgba(6, 84, 170, 1) 31%,
+    rgba(0, 255, 113, 1) 100%
+  );
+</style>
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dynamic URL Generator</title>
+</head>
+<body>
+<img id="sounding_alb">
+
+<script>
+        function generateURL() {
+            const baseURL = "https://weather.uwyo.edu/upperair/images/";
+            const date = new Date();
+            const year = date.getUTCFullYear();
+            const month = String(date.getUTCMonth() + 1).padStart(2, '0'); // Months are 0-indexed, add 1
+            const day = String(date.getUTCDate()).padStart(2, '0');
+
+            // Determine the closest sounding release time based on current UTC hours
+            const currentUTCHour = date.getUTCHours();
+            const hour = currentUTCHour < 12 ? "00" : "12";
+            const endOfURL = ".72518.skewt.parc.gif";
+
+            return `${baseURL}${year}${month}${day}${hour}${endOfURL}`;
+        }
+
+        // Proper event handling for loading the image
+        window.onload = function() {
+            const url = generateURL();
+            document.getElementById('sounding_alb').src = url;
+        };
+    </script>
+<div class="card">
+    <div class="card-body">
+        <h4>Albany, NY</h4>
+    </div>
+</div>
+<div class="card">
+    <div class="card-body">
+        <h4>Gray, ME</h4>
+    </div>
+</div>
+<br>
+<hr class="gradient">
+<style>
+    hr.gradient {
+    height: 3px;
+    border: none;
+    border-radius: 6px;
+    background: linear-gradient(
+    90deg,
+    rgba(13, 8, 96, 1) 0%,
+    rgba(9, 9, 121, 1) 11%,
+    rgba(6, 84, 170, 1) 31%,
+    rgba(0, 255, 113, 1) 100%
+  );
+</style>
+<h2>Storm Prediction Center Outlooks</h2>
+<hr class="gradient">
+<style>
+    hr.gradient {
+    height: 3px;
+    border: none;
+    border-radius: 6px;
+    background: linear-gradient(
+    90deg,
+    rgba(13, 8, 96, 1) 0%,
+    rgba(9, 9, 121, 1) 11%,
+    rgba(6, 84, 170, 1) 31%,
+    rgba(0, 255, 113, 1) 100%
+  );</style>
+<br>
+<h2>Current SPC Outlook</h2>
+<img src="http://www.spc.noaa.gov//products/activity_loop.gif" id="activity" alt="SPC Products Overview" width="582" height="408">
+<br>
+<br>
+<h2>Current SPC Pobabilistic Tornado Outlook</h2>
+<img src = "https://www.spc.noaa.gov/products/outlook/day1probotlk_1200_torn.gif" width="582" height="408">
+<br>
+<br>
+<h2>Current SPC Pobabilistic Wind Outlook</h2>
+<img src="https://www.spc.noaa.gov/products/outlook/day1probotlk_1300_wind.gif" width="582" height="408">
+<br>
+<br>
+<h2>Current SPC Pobabilistic Hail Outlook</h2>
+<img src="https://www.spc.noaa.gov/products/outlook/day1probotlk_1300_hail.gif" width="582" height="408">
+</body>
+</html>
+{% endblock %}
