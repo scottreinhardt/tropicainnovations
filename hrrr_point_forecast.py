@@ -28,33 +28,37 @@ class HRRR_Point_Forecast:
         # for valid hours to their respective datetime strings dictionary
         self.valid_hrs_dt = {}
 
+    # This method reads in each parameter from the list of cities and stores them in a large array
     def read_json(self, file_path):
         try:
             with open(file_path, 'r') as file:
                 city_data = json.load(file)
+                # Loop over every city in the list of cities
                 for city in city_data:
+                    # Extract the city name
                     city_name  = city.get("name")
+                    # Extract the country name
                     country_name  = city.get("cou_name_en")
+                    # Extract the time zone
                     time_zone = city.get("timezone")
                     #zip_code  = city.get("zip_code")
                     # coordinates is a json array of {lat, lon}
+                    # Extract the coordinates, which contain the lat and lon
                     coords = city.get("coordinates")
+                    # Obtain the lat and lon from coords
                     lat = coords.get("lat")
                     lon = coords.get("lon")
+                    # Initialize empty arrays to hold all of the variables you are looking for
                     temp = []
                     dew = []
-                    wind_speed = []
-                    wind_direction = []
-                    cloud_cover = []
-                    #wx_phenomena = {}
-                    #pop = {}
-                    #p_total = {}
-                    #p_rate = {}
-                    #p_type = {}
-                    self.cityLocations[city_name] = [lat, lon, city_name, country_name, time_zone, [], [], [], [], []]
+                    #wind_speed = []
+                    #wind_direction = []
+                    wx_phenom = []
+                    self.cityLocations[city_name] = [lat, lon, city_name, country_name, time_zone, temp, dew, wx_phenom]
         except FileNotFoundError:
             print(f"Error: File not found: {file_path}")
 
+    # Converts the hour into UTC (zulu time)
     def hour_int_to_utc(self, int_hour):
         if int_hour == 0:
             return "00"
@@ -118,11 +122,15 @@ class HRRR_Point_Forecast:
         model_arr_wind_u = []
         model_arr_wind_v = []
         model_arr_cc = []
-        model_arr_wx_phenom = []
-        model_array_chance_preip = []
-        model_arr_total_precip = []
-        model_arr_precip_rate = []
-        model_arr_total_precip_type = []
+        model_arr_vis = []
+        model_arr_snow = []
+        model_arr_rain_rate = []
+        model_arr_rh = []
+        model_arr_cape = []
+        model_arr_refc = []
+        #model_array_chance_preip = []
+        #model_arr_total_precip = []
+        #model_arr_total_precip_type = []
         time_step = 1
 
         latest_date, latest_run = self.get_latest_hrrr_run()
@@ -162,41 +170,51 @@ class HRRR_Point_Forecast:
                         continue
                     else:
                         break
-                ds = H.xarray("TMP:2 m")  # Loads the right field
+                ds = H.xarray("TMP:2 m")
 
                 #ds = H.xarray(":TMP:2 m above")
                 ds_dew = H.xarray("DPT:2 m")
                 # Cloud Cover
-                #ds_cc = H.xarray("TCDC:entire atmosphere")
+                ds_cc = H.xarray("TCDC:entire atmosphere")
                 #if isinstance(ds_cc, list):
-                #    ds_cc = ds_cc[0]  # Use the first dataset if it's a list
+                #    ds_cc = ds_cc[0]
                 # Relative Humidity
                 #ds_rh = H.xarray("RH:2 m above ground")
                 # East to West Wind
-                #ds_u_wind = H.xarray("UGRD:10 m above ground")
+                ds_u_wind = H.xarray("UGRD:10 m above ground")
                 # North or South Wind
-                #ds_v_wind = H.xarray("VGRD:10 m above ground")
-                #wind = np.sqrt((ds_u_wind)**2 + (ds_v_wind)**2)
-                # Weather Phenomena
-                #ds_wx = H.xarray(":WX:surface")
+                ds_v_wind = H.xarray("VGRD:10 m above ground")
+                wind = np.sqrt((ds_u_wind)**2 + (ds_v_wind)**2)
                 # Chance of precipitation
                 #ds_pop = H.xarray(":POZP:surface")
                 # Accumulated Precipitation
                 #ds_apcp = H.xarray(":APCP:surface")
                 # Precipitation Rate
-                #ds_prate = H.xarray(":PRATE:surface")
+                ds_prate = H.xarray(":PRATE:surface")
                 # Can also show precipitation type if the temperature is below 32ºF
-                #ds_snow = H.xarray(":CSNOW:surface")
+                # This shows 1: Snow is occurring 0: Its not Snowing
+                ds_snow = H.xarray(":CSNOW:surface")
+                #ds_vis = H.xarray("VIS:surface")
+                ds_rh = H.xarray("RH:2 m above ground")
+
+                ds_cape = H.xarray("CAPE:surface")
+                ds_refc = H.xarray("REFC:entire atmosphere")
+
+                # Use CAPE, precipitation rate, and composite reflectivity to predict Thunderstorms in data
+                model_arr_cape.append(ds_cape)
+                model_arr_refc.append(ds_refc)
 
                 model_arr.append(ds)
                 model_arr_dew.append(ds_dew)
-                #model_arr_wind_u.append(ds_u_wind)
-                #model_arr_wind_v.append(ds_v_wind)
-                #model_arr_cc.append(ds_cc)
+                model_arr_wind_u.append(ds_u_wind)
+                model_arr_wind_v.append(ds_v_wind)
+                model_arr_cc.append(ds_cc)
+                model_arr_rh.append(ds_rh)
+                model_arr_snow.append(ds_snow)
                 #model_arr_wx_phenom.append(ds_wx)
                 #model_array_chance_preip.append(ds_pop)
                 #model_arr_total_precip.append(ds_apcp)
-                #model_arr_precip_rate.append(ds_prate)
+                model_arr_rain_rate.append(ds_prate)
                 #model_arr_total_precip_type.append(ds_snow)
                 valid_hours.append(hour)
             except Exception as e:
@@ -209,8 +227,6 @@ class HRRR_Point_Forecast:
 
         # Create 2D lat/lon grid just like HRRR format
         #lons, lats = np.meshgrid(lons_1d, lats_1d)  # shape (721, 1440)
-
-        # Now everything behaves like HRRR
         tree = cKDTree(np.column_stack((lons_1d.ravel(), lats_1d.ravel())))
 
 
@@ -227,19 +243,73 @@ class HRRR_Point_Forecast:
 
             #print(f"[Indexing] {i + 1}/{len(city_data)} ({((i + 1) / len(city_data)) * 100:.2f}%)")
 
-        # Step 4: Precompute variable name
+        # Step 4: Precompute variable name for dewpoint and temperature
         varname = list(model_arr[0].data_vars.keys())[0]
         var_dew = list(model_arr_dew[0].data_vars.keys())[0]
-        #var_wind_u = list(model_arr_wind_u[0].data_vars.keys())[0]
-        #var_wind_v = list(model_arr_wind_v[0].data_vars.keys())[0]
-        #var_cc = list(model_arr_cc[0].data_vars.keys())[0]
+        # See if rh data has been extracted from the model
+        if model_arr_rh:
+            # get the variable name for relative humidity
+            var_rh = list(model_arr_rh[0].data_vars.keys())[0]
+        else:
+            print("Warning ⚠️: No relative humidity data")
+            var_rh = None
+        # see if visibility data has been extracted from the model
+        """
+        if model_arr_vis:
+            # Get the variable name for bvisibility
+            var_vis = list(model_arr_vis[0].data_vars.keys())[0]
+        else:
+            print("Warning: No visibility data found.")
+            var_vis = None
+        """
+
+        # see if the u-component of the wind has been extracted from the model
+        if model_arr_wind_u:
+            # get the variable name for the u component of the wind
+            var_wind_u = list(model_arr_wind_u[0].data_vars.keys())[0]
+        else:
+            print("Warning: No u-wind component data found.")
+            var_wind_u = None
+
+        # see if the v component of the wind has been extracted from the model
+        if model_arr_wind_v:
+            # get the variable name for the v component of the wind
+            var_wind_v = list(model_arr_wind_v[0].data_vars.keys())[0]
+        else:
+            print("Warning: No v-wind component data found.")
+            var_wind_v = None
+
+        # See if the cloud cover data has been extracted from the model
+        if model_arr_cc:
+            # get the variable name for cloud cover
+            var_cc = list(model_arr_cc[0].data_vars.keys())[0]
+        else:
+            print("Warning: No cloud cover data found.")
+            var_cc = None
+
+        if model_arr_cape:
+            var_cape = list(model_arr_cape[0].data_vars.keys())[0]
+        else:
+            print("Warning: No u-wind component data found.")
+            var_cape = None
+
+        if model_arr_refc:
+            var_refc= list(model_arr_refc[0].data_vars.keys())[0]
+        else:
+            print("Warning: No u-wind component data found.")
+            var_refc = None
+
 
         #var_wx = list(model_arr_wx_phenom[0].data_vars.keys())[0]
         #var_pop = list(model_array_chance_preip[0].data_vars.keys())[0]
         #var_apcp = list(model_arr_total_precip[0].data_vars.keys())[0]
-        #var_prate = list(model_arr_precip_rate[0].data_vars.keys())[0]
+        if model_arr_rain_rate:
+            var_prate = list(model_arr_rain_rate[0].data_vars.keys())[0]
+        else:
+            print("Warning: No precipitation rate component data found.")
+            var_prate = None
         #var_snow = list(model_arr_total_precip_type[0].data_vars.keys())[0]
-
+        var_snow = list(model_arr_snow[0].data_vars.keys())[0]
         #if isinstance(model_arr_cc[0], xarray.DataArray):
         # Just use it directly
         #    cc_data = model_arr_cc[0].data
@@ -251,22 +321,73 @@ class HRRR_Point_Forecast:
         total_steps = len(valid_hours) * len(city_data)
         step = 0
         #for hour, ds in enumerate(range(0, 12, 6)):
-        for ds, ds_dew, hour in zip(model_arr, model_arr_dew, valid_hours):
+        # Add this BEFORE the for-loop over ds in zip(...)
+        city_keys = list(city_indices.keys())
+        y_indices = np.array([city_indices[c][0] for c in city_keys])
+        x_indices = np.array([city_indices[c][1] for c in city_keys])
+
+        for ds, ds_dew, ds_cc, ds_rh, ds_prate, ds_snow, ds_cape, ds_refc, hour in zip(
+            model_arr, model_arr_dew, model_arr_cc, model_arr_rh,
+            model_arr_rain_rate, model_arr_snow, model_arr_cape,
+            model_arr_refc, valid_hours):
+
+            # Extract raw NumPy arrays
+            temp_data = ds[varname].data
+            dew_data = ds_dew[var_dew].data
+            cc_data = ds_cc[var_cc].data
+            rh_data = ds_rh[var_rh].data
+            prate_data = ds_prate[var_prate].data
+            snow_data = ds_snow[var_snow].data
+            cape_data = ds_cape[var_cape].data
+            refc_data = ds_refc[var_refc].data
+
+            # Vectorized slicing
+            temp_f_all = ((temp_data[y_indices, x_indices] - 273.15) * 9/5) + 32
+            dew_f_all = ((dew_data[y_indices, x_indices] - 273.15) * 9/5) + 32
+            cloud_cover_all = cc_data[y_indices, x_indices].astype(int)
+            snow_all = snow_data[y_indices, x_indices].astype(int)
+            prate_all = prate_data[y_indices, x_indices].astype(int)
+            rh_all = rh_data[y_indices, x_indices].astype(int)
+            cape_all = cape_data[y_indices, x_indices].astype(int)
+            refc_all = refc_data[y_indices, x_indices].astype(int)
+
+            # Loop through each city — this part is still required
+            for i, city in enumerate(city_keys):
+                temp_f = round(temp_f_all[i], 1)
+                dew_f = round(dew_f_all[i], 1)
+                cloud_cover = cloud_cover_all[i]
+                c_snow = snow_all[i]
+                precipitation_rate = prate_all[i]
+                rh = rh_all[i]
+                cape = cape_all[i]
+                refc = refc_all[i]
+
+                city_data[city][5].append(temp_f)
+                city_data[city][6].append(dew_f)
+                wx_condition = self.compute_wx_condition(
+                    cloud_cover, precipitation_rate, c_snow, temp_f, cape, refc, dew_f, rh
+                )
+                city_data[city][7].append(wx_condition)
+
+        """
+        for ds, ds_dew, ds_cc, ds_rh, ds_prate, ds_snow, ds_cape, ds_refc, hour in zip(model_arr, model_arr_dew, model_arr_cc, model_arr_rh, model_arr_rain_rate, model_arr_snow, model_arr_cape, model_arr_refc, valid_hours):
             temp_data = ds[varname].data
             dew_data = ds_dew[var_dew].data
             #wind_u_data = ds_u_wind[var_wind_u].data
             #wind_v_data = ds_v_wind[var_wind_v].data
-            #cc_data = ds_cc[var_cc].data
+            cc_data = ds_cc[var_cc].data
 
-            #wx_phenom_data = ds_wx[var_wx].data
-            #pop_data = ds_pop[var_pop].data
-            #total_precip_data = ds_apcp[var_apcp].data
-            #prate_data = ds_prate[var_prate].data
+            rh_data = ds_rh[var_rh].data
+            prate_data = ds_prate[var_prate].data
+            snow_data = ds_snow[var_snow].data
+            #vis_data = ds_vis[var_vis]
+            cape_data = ds_cape[var_cape]
+            refc_data = ds_refc[var_refc]
+            #vis_data = ds_vis[var_vis]
             #ptype_data = ds_snow[var_snow].data
             for icao, (y_idx, x_idx) in city_indices.items():
                 temp_k = temp_data[y_idx, x_idx]
                 temp_f = round((temp_k - 273.15) * 9 / 5 + 32, 2)
-                #city_data[icao][3][int(hour)] = temp_f
                 city_data[icao][5].append(temp_f)
 
 
@@ -285,20 +406,40 @@ class HRRR_Point_Forecast:
                 #city_data[icao][7].append(wind_angle)
 
                 # Handle Cloud Cover Data
-                #cloud_cover = int(cc_data[y_idx, x_idx])
-                #city_data[icao][8].append(cloud_cover)
+                cloud_cover = int(cc_data[y_idx, x_idx])
+                #city_data[icao][7].append(cloud_cover)
 
-                # Handle Wx Phenomena
-                #city_data[icao][11][int(hour)] = wx_phenom_data
-                #city_data[icao][12][int(hour)] = pop_data
-                #city_data[icao][13][int(hour)] = total_precip_data
-                #city_data[icao][14][int(hour)] = prate_data
-                #city_data[icao][15][int(hour)] = ptype_data
+                # Handle Chance Snow
+                c_snow = int(snow_data[y_idx, x_idx])
+                #city_data[icao][9].append(c_snow)
+
+                # Handle Visibility
+                #visibility = int(vis_data[y_idx, x_idx])
+                #city_data[icao][8].append(visibility)
+
+                # Handle Precipitation rate
+                precipitation_rate = int(prate_data[y_idx, x_idx])
+                #city_data[icao][11].append(precipitation_rate)
+
+                # Handle Relative Humidity
+                rh = int(rh_data[y_idx, x_idx])
+                #city_data[icao][10].append(humidity)
+
+                # Handle CAPE
+                cape = int(cape_data[y_idx, x_idx])
+
+                # handle composite reflectivity
+                refc = int(refc_data[y_idx, x_idx])
+
+                # Calculate the weather phenomena
+                wx_condition = self.compute_wx_condition(cloud_cover, precipitation_rate, c_snow, temp_f, cape, refc, dew_f, rh)
+                city_data[icao][7].append(wx_condition)
 
 
                 step += 1
                 #if step % 100 == 0 or step == total_steps:
                 #    print(f"[Extracting] {step}/{total_steps} ({(step / total_steps) * 100:.2f}%)")
+        """
         # formatted_date = str(latest_date) + " " + latest_run + ":00"
         # starting_fxx = self.starting_fxx(int(latest_run))
         # valid_hours
@@ -311,6 +452,55 @@ class HRRR_Point_Forecast:
         # loop through list of hourhours in valid_hours array
 
         # add valid_hours list to the end of self.city_data dict
+
+    # Takes in the cloud cover percentage, the precipitation rate, if it is snowing, and the visibility
+    # Returns the number for the correct icon
+    def compute_wx_condition(self, cloud_cover, prate, snow, temp, cape, refc, dew, rh):
+        # Check for fog
+        if (rh > 96 and prate == 0):
+            # Foggy conditions
+            return 45
+            if temp <= 32:
+                # Freezing fog
+                return 48
+        # If the precipitation rate is 0, then no wx_phenomena, only cloud cover
+        if prate == 0:
+            #cloudCoverTypes = {'CLR': 0.0, 'FEW': 0.25, 'SCT': 0.50, 'BKN': 0.75, 'OVC': 1.0, 'SKC': 0.00, 'CAVOK': 0.0}
+            if cloud_cover >= 0 and cloud_cover < 0.25:
+                # Clear
+                return 0
+            elif cloud_cover >= 0.25 and cloud_cover < 0.5:
+                # Partly Cloudy
+                return 1
+            elif cloud_cover >= 0.5 and cloud_cover < 0.75:
+                # Mostly Cloudy
+                return 2
+            elif cloud_cover >= 0.75 and cloud_cover <= 1:
+                # Overcast
+                return 3
+        # Check to see if it is precipitating
+        if prate > 0:
+            # If the temp is at or below freezing and it is precipitating, then you have freezing rain
+            if temp < 32:
+                if prate < 0.5:
+                    # Light Freezing Rain
+                    return 66
+                else:
+                    # Heavy freezing rain
+                    return 67
+            # If the temperature is above freezing, then it is raining
+            else:
+                if prate < 0.5:
+                    # Light Rain
+                    return 61
+                elif prate < 2.0:
+                    # Moderate Rain
+                    return 63
+                else:
+                    # Heavy Rain
+                    return 65
+        # If ex icon can not be identified, return Unknown icon
+        return "Unknown"
 
     # Want to pass in the valid_hours array, the datee that the model is initialized, and the timestep
     def create_valid_hr_dict(self, valid_hrs, starting_dt_str, time_step):
@@ -392,9 +582,43 @@ class HRRR_Point_Forecast:
         with open('/home/tropicainnovations/mysite/static/gfs_dump/gfs_dump.json', "w") as f:
             json.dump(self.cityLocations, f)
     """
+
+    import numpy as np
+    import json
+
+    def convert_to_native(self, obj):
+        if isinstance(obj, dict):
+            return {k: self.convert_to_native(v) for k, v in obj.items()}
+        elif isinstance(obj, list):
+            return [self.convert_to_native(i) for i in obj]
+        elif isinstance(obj, (np.integer, np.int32, np.int64)):
+            return int(obj)
+        elif isinstance(obj, (np.floating, np.float32, np.float64)):
+            return float(obj)
+        else:
+            return obj
+    """
     def json_dump(self):
         # Clean version of cityLocations (only real cities)
         safe_cityLocations = self.cityLocations
+
+        # Clean version of valid_hrs_dt
+        safe_valid_hrs_dt = {}
+        for k, v in self.valid_hrs_dt.items():
+            safe_valid_hrs_dt[int(k)] = v  # v already string
+
+        # --- Build the output dict ---
+        output = {
+            "valid_hrs_dt": safe_valid_hrs_dt,   # <-- put valid_hrs_dt FIRST
+            "cities": safe_cityLocations         # <-- put cities SECOND
+        }
+
+        with open('/home/tropicainnovations/mysite/static/hrrr_dump/hrrr_dump.json', "w") as f:
+            json.dump(output, f)
+    """
+    def json_dump(self):
+        # Clean version of cityLocations (only real cities)
+        safe_cityLocations = self.convert_to_native(self.cityLocations)
 
         # Clean version of valid_hrs_dt
         safe_valid_hrs_dt = {}
@@ -441,7 +665,18 @@ class HRRR_Point_Forecast:
         kbos_lat = 42.3656
         lon = -71.0096
         kbos_lon = self.normalize_lon(lon)
+        H = HerbieLatest(model="hrrr", product="sfc", fxx=0)
+        H.download()
+        inv = H.inventory()
 
+        for i, row in inv.iterrows():
+            var = row['variable']
+            level = row['level']
+            forecast = row['forecast_time']
+            print(f"{i+1:>3}: {var:<6} | Level: {level:<20} | Forecast Hour: {forecast}")
+
+
+        """
         # Load latest HRRR surface model
         #H = HerbieLatest(model="hrrr", product="sfc", fxx=0)
 
@@ -452,13 +687,13 @@ class HRRR_Point_Forecast:
         for item in inv:
             if "10 m above ground" in item:
                 print(item)
-        """
+
         for hour in range(0,384,6):
             H = Herbie("2025-04-21", model="gfs", product="pgrb2.0p25", fxx=0)
             # Get 2m temperature field
             #ds = H.xarray(":TMP:2 m above")
             ds = H.xarray(":TMP:2 m above")
-        """
+
         #ds = H.xarray(":10 m above ground")
         #ds = H.xarray(filter_by="level", value=["10 m above ground", "2 m above ground", "surface"])
 
@@ -481,6 +716,7 @@ class HRRR_Point_Forecast:
         print(self.get_temperature_at_point(ds, kbos_lat, kbos_lon))
 
         print(f"GFS 00Z run (2025-04-21): 2m temperature sample (°F):\n{temp_f}")
+        """
 
 
 if __name__ == '__main__':
@@ -490,4 +726,4 @@ if __name__ == '__main__':
     HRRR_Point_Forecast.read_json('/home/tropicainnovations/mysite/static/geonames-all-cities-with-a-population-1000.json')
     HRRR_Point_Forecast.get_forecast_fast()
     HRRR_Point_Forecast.json_dump()
-    #GFS_Point_Forecast.get_forecast_test()
+    #HRRR_Point_Forecast.get_forecast_test()
