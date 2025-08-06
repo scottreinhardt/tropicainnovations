@@ -16,7 +16,6 @@
       height: 100%;
       margin: 0;
       padding: 0;
-      background-color: #E6F4F1;
 
     }
 
@@ -224,16 +223,6 @@
         scrolling="auto">
 </iframe>
 </div>
-<!--
-    <div class="meteogram">
-      <div>
-      <canvas id="myChart"></canvas>
-      </div>
-      <div class = "interactive_forecast">
-        <pre id="data"></pre>
-
-        <canvas id="temperatureChart" width="100px" height="200px"></canvas>
-        -->
         <script>
         const locationForm = document.getElementById("locationForm");
 
@@ -249,35 +238,6 @@
             // No chart with the given ID exists
             console.log('No chart found.');
           }
-          /*
-          // Access the input field value
-          const locationInput = document.getElementById("inputLocation").value;
-
-          // Display the location in the <p> element
-          document.getElementById("displayLocation").innerText = "You entered: " + locationInput;
-          let queryLocation = encodeURIComponent(locationInput); // Proper encoding for API request
-          fetch("https://api.geoapify.com/v1/geocode/search?text=" + queryLocation + "&format=json&apiKey=09f93f7747804b9b9455f42d2cb443c8")
-            .then(response => {
-              if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
-              }
-              return response.json(); // Parse JSON response
-            })
-            .then(result => {
-              console.log("Geocoding result:", result); // Log the result
-              console.log(result);
-              let results = result.results;
-              let lat = results[0].lat;
-              let lon = results[0].lon;
-              console.log(lat);
-              getWeatherDataTextPrompt(lat, lon);
-              //let lat = json_decipher(JSON.stringify(result, null, 2)); // Display the result in an alert
-            })
-            .catch(error => console.error("Error:", error)); // Log errors
-          // Log the value
-          console.log("Location entered:", locationInput);
-          alert("Location entered: " + locationInput);
-          */
         });
 
         function getCoordinatesFromGeoapify(location) {
@@ -359,6 +319,7 @@
                   alert("Geolocation is not supported by your browser.");
               }
           }
+          window.getUserLocation = getUserLocation;
 
           // Success callback
           function successCallback(position) {
@@ -376,9 +337,9 @@
               console.error("Error getting location:", error);
               alert(`Unable to retrieve location. Error: ${error.message}`);
           }
-
+        /*
           // Fetch Geoapify data and send data to Flask backend
-          function fetchGeoapifyData(lat, lon) {
+          async function fetchGeoapifyData(lat, lon) {
               // The secret api key shhhhh
               const apiKey = "09f93f7747804b9b9455f42d2cb443c8";
               // URL for Geoapify to return the users current location
@@ -407,7 +368,14 @@
 
                       // Call the getWeather function to build the url with the desired parameters and format the information that is passed back from the OpenMeteo API
                       try {
-                          getWeather(lat, lon);
+                          // Gets the weather data from OpenMeteo, udates the current conditions section, updates the METAR Map, Updates the 5 closest locations section, and updates the 7 Day forecast
+                          const weatherData = await getWeatherData(lat, lon);
+                          console.log(weatherData);
+                          // Dynamically inject html to represent the current conditions, the 5 closest locations weather, the 7 day forecast, and the METAR Map
+                          if (weatherData) {
+                            await modifyPageHTML(lat, lon, weatherData);
+                          }
+
                       } catch (error) {
                           console.error(error);
                           // Expected output: ReferenceError: nonExistentFunction is not defined
@@ -423,6 +391,33 @@
                       console.error("Error fetching Geoapify data:", error);
                   });
           }
+          */
+          // Fetch Geoapify data and send data to Flask backend
+        async function fetchGeoapifyData(lat, lon) {
+            const apiKey = "09f93f7747804b9b9455f42d2cb443c8";
+            const url = `https://api.geoapify.com/v1/geocode/reverse?lat=${lat}&lon=${lon}&apiKey=${apiKey}`;
+
+            try {
+                const response = await fetch(url);
+                const data = await response.json();
+
+                console.log("Geoapify Data:", data);
+
+                const formattedAddress = data.features[0]?.properties?.formatted || "No address found";
+                document.getElementById("address").innerText = `Address: ${formattedAddress}`;
+
+                const weatherData = await getWeatherData(lat, lon);
+                console.log("Weather Data:", weatherData);
+
+                if (weatherData) {
+                    await modifyPageHTML(lat, lon, weatherData);
+                }
+
+            } catch (error) {
+                console.error("Error fetching Geoapify or weather data:", error);
+            }
+        }
+
 
         function wmo_decode(code_number) {
           const wmoWeatherCodes = new Map([
@@ -559,221 +554,137 @@
 //console.log(wmoWeatherCodes.get(80)); // Output: "Rain show
         }
 
-
-        // This takes in an integer (the code) and returns the description and the url of the code as a tuple (description, url_for_icon)
+        // Takes in a weather code from open meteo and returns the description and the icon for that weather condition
         function find_code(code) {
-            let wmo_descriptions = [];
-            // list of all weather codes from open meteo
             const openMeteoWeatherCodes = new Map([
-              [0, "Clear sky"],
-              [1, "Mainly clear"],
-              [2, "Partly cloudy"],
-              [3, "Overcast"],
-              [45, "Fog"],
-              [48, "Depositing rime fog"],
-              [51, "Light drizzle"],
-              [53, "Moderate drizzle"],
-              [55, "Dense drizzle"],
-              [56, "Light freezing drizzle"],
-              [57, "Dense freezing drizzle"],
-              [61, "Slight rain"],
-              [63, "Moderate rain"],
-              [65, "Heavy rain"],
-              [66, "Light freezing rain"],
-              [67, "Heavy freezing rain"],
-              [71, "Slight snowfall"],
-              [73, "Moderate snowfall"],
-              [75, "Heavy snowfall"],
-              [77, "Snow grains"],
-              [80, "Slight rain showers"],
-              [81, "Moderate rain showers"],
-              [82, "Violent rain showers"],
-              [85, "Slight snow showers"],
-              [86, "Heavy snow showers"],
-              [95, "Thunderstorm"],
-              [96, "Thunderstorm with slight hail"],
-              [99, "Thunderstorm with heavy hail"]
+                [0, ["Clear sky", "https://www.pythonanywhere.com/user/tropicainnovations/files/home/tropicainnovations/mysite/static/icons/MAm-WeatherIcons-MS02e/icons/PNGs_256x256/wsymbol_0001_sunny.png"]],
+                [1, ["Mainly clear", "https://www.pythonanywhere.com/user/tropicainnovations/files/home/tropicainnovations/mysite/static/icons/MAm-WeatherIcons-MS02e/icons/PNGs_256x256/wsymbol_0002_sunny_intervals.png"]],
+                [2, ["Partly cloudy", "https://www.pythonanywhere.com/user/tropicainnovations/files/home/tropicainnovations/mysite/static/icons/MAm-WeatherIcons-MS02e/icons/PNGs_256x256/wsymbol_0043_mostly_cloudy.png"]],
+                [3, ["Overcast", "https://www.pythonanywhere.com/user/tropicainnovations/files/home/tropicainnovations/mysite/static/icons/MAm-WeatherIcons-MS02e/icons/PNGs_256x256/wsymbol_0003_white_cloud.png"]],
+                [45, ["Fog", "https://www.pythonanywhere.com/user/tropicainnovations/files/home/tropicainnovations/mysite/static/icons/MAm-WeatherIcons-MS02e/icons/PNGs_256x256/wsymbol_0007_fog.png"]],
+                [48, ["Depositing rime fog", "https://www.pythonanywhere.com/user/tropicainnovations/files/home/tropicainnovations/mysite/static/icons/MAm-WeatherIcons-MS02e/icons/PNGs_256x256/wsymbol_0047_freezing_fog.png"]],
+                [51, ["Light drizzle", "https://www.pythonanywhere.com/user/tropicainnovations/files/home/tropicainnovations/mysite/static/icons/MAm-WeatherIcons-MS02e/icons/PNGs_256x256/wsymbol_0048_drizzle.png"]],
+                [53, ["Moderate drizzle", "https://www.pythonanywhere.com/user/tropicainnovations/files/home/tropicainnovations/mysite/static/icons/MAm-WeatherIcons-MS02e/icons/PNGs_256x256/wsymbol_0048_drizzle.png"]],
+                [55, ["Dense drizzle", "https://www.pythonanywhere.com/user/tropicainnovations/files/home/tropicainnovations/mysite/static/icons/MAm-WeatherIcons-MS02e/icons/PNGs_256x256/wsymbol_0081_heavy_drizzle.png"]],
+                [56, ["Light freezing drizzle", "https://www.pythonanywhere.com/user/tropicainnovations/files/home/tropicainnovations/mysite/static/icons/MAm-WeatherIcons-MS02e/icons/PNGs_256x256/wsymbol_0049_freezing_drizzle.png"]],
+                [57, ["Dense freezing drizzle", "https://www.pythonanywhere.com/user/tropicainnovations/files/home/tropicainnovations/mysite/static/icons/MAm-WeatherIcons-MS02e/icons/PNGs_256x256/wsymbol_0049_freezing_drizzle.png"]],
+                [61, ["Slight rain", "https://www.pythonanywhere.com/user/tropicainnovations/files/home/tropicainnovations/mysite/static/icons/MAm-WeatherIcons-MS02e/icons/PNGs_256x256/wsymbol_0017_cloudy_with_light_rain.png"]],
+                [63, ["Moderate rain", "https://www.pythonanywhere.com/user/tropicainnovations/files/home/tropicainnovations/mysite/static/icons/MAm-WeatherIcons-MS02e/icons/PNGs_256x256/wsymbol_0017_cloudy_with_light_rain.png"]],
+                [65, ["Heavy rain", "https://www.pythonanywhere.com/user/tropicainnovations/files/home/tropicainnovations/mysite/static/icons/MAm-WeatherIcons-MS02e/icons/PNGs_256x256/wsymbol_0051_extreme_rain.png"]],
+                [66, ["Light freezing rain", "https://www.pythonanywhere.com/user/tropicainnovations/files/home/tropicainnovations/mysite/static/icons/MAm-WeatherIcons-MS02e/icons/PNGs_256x256/wsymbol_0049_freezing_drizzle.png"]],
+                [67, ["Heavy freezing rain", "https://www.pythonanywhere.com/user/tropicainnovations/files/home/tropicainnovations/mysite/static/icons/MAm-WeatherIcons-MS02e/icons/PNGs_256x256/wsymbol_0050_freezing_rain.png"]],
+                [71, ["Light snow", "https://www.pythonanywhere.com/user/tropicainnovations/files/home/tropicainnovations/mysite/static/icons/MAm-WeatherIcons-MS02e/icons/PNGs_256x256/wsymbol_0019_cloudy_with_light_snow.png"]],
+                [73, ["Moderate snow", "https://www.pythonanywhere.com/user/tropicainnovations/files/home/tropicainnovations/mysite/static/icons/MAm-WeatherIcons-MS02e/icons/PNGs_256x256/wsymbol_0019_cloudy_with_light_snow.png"]],
+                [75, ["Heavy snow", "https://www.pythonanywhere.com/user/tropicainnovations/files/home/tropicainnovations/mysite/static/icons/MAm-WeatherIcons-MS02e/icons/PNGs_256x256/wsymbol_0020_cloudy_with_heavy_snow.png"]],
+                [77, ["Snow grains", "https://www.pythonanywhere.com/user/tropicainnovations/files/home/tropicainnovations/mysite/static/icons/MAm-WeatherIcons-MS02e/icons/PNGs_256x256/wsymbol_0053_blowing_snow.png"]],
+                [80, ["Slight rain showers", "https://www.pythonanywhere.com/user/tropicainnovations/files/home/tropicainnovations/mysite/static/icons/MAm-WeatherIcons-MS02e/icons/PNGs_256x256/wsymbol_0009_light_rain_showers.png"]],
+                [81, ["Moderate rain showers", "https://www.pythonanywhere.com/user/tropicainnovations/files/home/tropicainnovations/mysite/static/icons/MAm-WeatherIcons-MS02e/icons/PNGs_256x256/wsymbol_0009_light_rain_showers.png"]],
+                [82, ["Heavy rain showers", "https://www.pythonanywhere.com/user/tropicainnovations/files/home/tropicainnovations/mysite/static/icons/MAm-WeatherIcons-MS02e/icons/PNGs_256x256/wsymbol_0010_heavy_rain_showers.png"]],
+                [85, ["Light snow showers", "https://www.pythonanywhere.com/user/tropicainnovations/files/home/tropicainnovations/mysite/static/icons/MAm-WeatherIcons-MS02e/icons/PNGs_256x256/wsymbol_0011_light_snow_showers.png"]],
+                [86, ["Heavy snow showers", "https://www.pythonanywhere.com/user/tropicainnovations/files/home/tropicainnovations/mysite/static/icons/MAm-WeatherIcons-MS02e/icons/PNGs_256x256/wsymbol_0012_heavy_snow_showers.png"]],
+                [95, ["Thunderstorm", "https://www.pythonanywhere.com/user/tropicainnovations/files/home/tropicainnovations/mysite/static/icons/MAm-WeatherIcons-MS02e/icons/PNGs_256x256/wsymbol_0024_thunderstorms.png"]],
+                [96, ["Thunderstorm with slight hail", "https://www.pythonanywhere.com/user/tropicainnovations/files/home/tropicainnovations/mysite/static/icons/MAm-WeatherIcons-MS02e/icons/PNGs_256x256/wsymbol_0059_thunderstorms_with_hail.png"]],
+                [99, ["Thunderstorm with heavy hail", "https://www.pythonanywhere.com/user/tropicainnovations/files/home/tropicainnovations/mysite/static/icons/MAm-WeatherIcons-MS02e/icons/PNGs_256x256/wsymbol_0015_heavy_hail_showers.png"]]
             ]);
 
-            return openMeteoWeatherCodes.get(code)
-        }
-
-        async function getWeather1(lat, lon) {
-            //const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,apparent_temperature,is_day,precipitation,wind_speed_10m,wind_direction_10m,wind_gusts_10m,&hourly=temperature_2m&daily=temperature_2m_max,temperature_2m_min,sunrise,sunset,apparent_temperature_max, apparent_temperature_min, wind_speed_10m_max, wind_gusts_10m_max, wind_direction_10m_dominant, uv_index_max,&temperature_unit=fahrenheit&timezone=auto`;
-            //const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=weather_code, temperature_2m,relative_humidity_2m,apparent_temperature,is_day,precipitation,cloud_cover,pressure_msl,wind_speed_10m,wind_direction_10m,wind_gusts_10m&hourly=weather_code, temperature_2m,relative_humidity_2m,dew_point_2m,apparent_temperature,precipitation_probability,wind_speed_10m,wind_gusts_10m,wet_bulb_temperature_2m,cape&daily=weather_code, temperature_2m_max,temperature_2m_min,apparent_temperature_max,apparent_temperature_min,sunrise,sunset,wind_speed_10m_max,wind_gusts_10m_max,wind_direction_10m_dominant,uv_index_max&temperature_unit=fahrenheit&wind_speed_unit=mph&precipitation_unit=inch&timezone=auto`;
-            alert(lat, lon);
-            //const url = 'https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=weather_code,temperature_2m,relative_humidity_2m,apparent_temperature,is_day,precipitation,cloud_cover,pressure_msl,wind_speed_10m,wind_direction_10m,wind_gusts_10m&hourly=weather_code,temperature_2m,relative_humidity_2m,dew_point_2m,apparent_temperature,precipitation_probability,wind_speed_10m,wind_gusts_10m,wet_bulb_temperature_2m,cape&daily=weather_code,temperature_2m_max,temperature_2m_min,apparent_temperature_max,apparent_temperature_min,sunrise,sunset,wind_speed_10m_max,wind_gusts_10m_max,wind_direction_10m_dominant,uv_index_max&temperature_unit=fahrenheit&wind_speed_unit=mph&precipitation_unit=inch&timezone=auto';
-            const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=weather_code,temperature_2m,relative_humidity_2m,apparent_temperature,is_day,precipitation,cloud_cover,pressure_msl,wind_speed_10m,wind_direction_10m,wind_gusts_10m&hourly=weather_code,temperature_2m,relative_humidity_2m,dew_point_2m,apparent_temperature,precipitation_probability,wind_speed_10m,wind_gusts_10m,wet_bulb_temperature_2m,cape&daily=weather_code,temperature_2m_max,temperature_2m_min,apparent_temperature_max,apparent_temperature_min,sunrise,sunset,wind_speed_10m_max,wind_gusts_10m_max,wind_direction_10m_dominant,uv_index_max&temperature_unit=fahrenheit&wind_speed_unit=mph&precipitation_unit=inch&timezone=auto`;
-            //const url_marine = 'https://marine-api.open-meteo.com/v1/marine?latitude={lat}&longitude={lon}&daily=wave_height_max&hourly=wave_height,sea_surface_temperature,sea_level_height_msl&current=sea_level_height_msl,sea_surface_temperature,wave_height';
-            const params = {
-	          "latitude": lat,
-	          "longitude": lon,
-	          "daily": ["temperature_2m_max", "temperature_2m_min", "apparent_temperature_max", "apparent_temperature_min", "sunrise", "sunset", "wind_speed_10m_max", "wind_gusts_10m_max", "wind_direction_10m_dominant", "uv_index_max"],
-	          "hourly": ["temperature_2m", "relative_humidity_2m", "dew_point_2m", "apparent_temperature", "precipitation_probability", "wind_speed_10m", "wind_gusts_10m", "wet_bulb_temperature_2m", "cape"],
-	          "current": ["temperature_2m", "relative_humidity_2m", "apparent_temperature", "is_day", "precipitation", "cloud_cover", "pressure_msl", "wind_speed_10m", "wind_direction_10m", "wind_gusts_10m"],
-	          "wind_speed_unit": "mph",
-	          "temperature_unit": "fahrenheit",
-	          "precipitation_unit": "inch"
-            };
-
-            // Convert the parameters to a URL-encoded string
-            // Convert the parameters to a URL-encoded string
-//const queryString = new URLSearchParams(
-//    Object.entries(params).flatMap(([key, value]) =>
-//        Array.isArray(value) ? value.map(v => [key, v]) : [[key, value]]
-//    )
-//).toString();
-
-            //const url = `https://api.open-meteo.com/v1/forecast?${queryString}`;
-
-
-            const marine_params = {
-	          "latitude": lat,
-	          "longitude": lon,
-	          "daily": "wave_height_max",
-	          "hourly": ["wave_height", "sea_level_height_msl", "sea_surface_temperature"],
-	          "current": ["wave_height", "sea_surface_temperature", "sea_level_height_msl"]
-            };
-
-            try {
-                const response = await fetch(url);
-                const data = await response.json();
-                alert(data.current);
-                //const marine_response = await fetch(url_marine);
-                //const marine_data = await marine_response.json();
-
-                const marine_url = "https://marine-api.open-meteo.com/v1/marine";
-                //const marineresponses = await fetchWeatherApi(marine_url, params);
-                //const marinedata = await marineresponses.json()
-                if (!data.hourly || !data.hourly.time) {
-                    throw new Error("Missing hourly data in API response");
-                }
-                //let current_weather = data.current;
-                //let daily_weather = data.daily;
-                //console.log(current_weather);
-                //console.log(daily_weather)
-                createWeatherChart1(data);
-
-            } catch (error) {
-                console.error("Error fetching weather:", error);
-                //document.getElementById("weather").innerHTML = "Failed to fetch weather data.";
+            if (openMeteoWeatherCodes.has(code)) {
+                return openMeteoWeatherCodes.get(code);
+            } else {
+                return ["Unknown", "https://tropicainnovations.weebly.com/uploads/3/6/0/1/3601755/wsymbol-0999-unknown_orig.png"];
             }
         }
 
-      function createWeatherChart1(weatherData) {
-        let current_weather = weatherData.current;
-        let hourly_weather = weatherData.hourly;
-        let daily_weather = weatherData.daily;
-        //let current_marine_conditions = marineData.current;
-        /*
-        // Parse weatherData if it's a string
-        if (typeof weatherData === 'string') {
-            try {
-                weatherData = JSON.parse(weatherData); // Convert string to JSON object
-            } catch (error) {
-                console.error("Error parsing weatherData as JSON:", error);
-                alert("Failed to process weather data.");
-                return;
-            }
+async function getWeatherData(lat, lon) {
+    const url_wx_api = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=weather_code,wind_direction_10m,temperature_2m,dew_point_2m,relative_humidity_2m,apparent_temperature,wind_speed_10m,precipitation&hourly=temperature_2m,relative_humidity_2m,dew_point_2m,apparent_temperature,precipitation_probability,wind_speed_10m,wind_gusts_10m,wet_bulb_temperature_2m,cape&daily=weather_code,temperature_2m_max,temperature_2m_min,wind_speed_10m_max&temperature_unit=fahrenheit&wind_speed_unit=mph&timezone=auto`;
+
+    const url_five_points_wx = `/`;
+
+    try {
+        const response_api = await fetch(url_wx_api);
+        if (!response_api.ok) {
+            throw new Error(`Open-Meteo API error: ${response_api.status}`);
         }
 
-        // Validate the structure of weatherData
-        if (!weatherData || !weatherData.current_weather || !weatherData.hourly_forecast) {
-            console.error("Invalid weatherData structure. Received:", weatherData);
-            alert("Weather data is invalid.");
-            return;
-        }*/
+        const data_api = await response_api.json();
+        console.log("API Weather Data:", data_api);
 
-        // Extract current weather
-        const currentWeather = weatherData;
-
-        // Convert the wwmo code(s) to who description(s)
-        wmo_description_current = find_code(current_weather.weather_code);
-        wmo_description_daily = find_code(daily_weather.weather_code);
-        wmo_description_hourly = find_code(hourly_weather.weather_code);
-        //console.log("Current Weather:", weatherData)
-        //console.log("Current Weather:", currentWeather);
-
-        // Display current weather information
-        const currentWeatherElement = document.getElementById("current_weather");
-        currentWeatherElement.innerHTML = `
-            <p>Temperature: ${current_weather.temperature_2m} °F</p>
-            <p>Apparent Temperature: ${current_weather.apparent_temperature} °F</p>
-            <p>Chance of Precipitation: ${current_weather.precipitation} %</p>
-            <p>Surface Pressure: ${current_weather.surface_pressure} hPa</p>
-            <p>Wind Speed (10m): ${current_weather.wind_speed_10m} mph</p>
-            <!--<p>Wind Gusts (10m): ${current_weather.wind_gusts_10m} mph</p>-->
-            <p>Wind Direction (10m): ${current_weather.wind_direction_10m} °</p>
-            <p>Relative Humidity: ${current_weather.relative_humidity_2m} %RH</p>
-            <p>Weather Code: ${wmo_description_current} </p>
-        `;
-        const dailyForecastWeatherElement = document.getElementById("seven_day_forecast");
-
-        // Check if daily_weather exists and has data before updating the DOM
-        if (daily_weather && daily_weather.temperature_2m_max && daily_weather.temperature_2m_max.length > 0) {
-            dailyForecastWeatherElement.innerHTML = `
-
-
-            `;
-        } else {
-            dailyForecastWeatherElement.innerHTML = `<p>Daily forecast data not available.</p>`;
-        }
-        // Extract hourly forecast
-        let hourlyForecast;
-
-
-        // Extract labels and data for the chart
-        const labels = hourly_weather.time;
-        const data = hourly_weather.temperature_2m_max;
-        //console.log(current_weather.time);
-        //console.log(data);
-
-        // Create the chart
-        const ctx = document.getElementById('myChart').getContext('2d');
-        new Chart(ctx, {
-            type: 'line',
-            data: {
-                labels: labels,
-                datasets: [{
-                    label: 'Temperature ºF',
-                    data: data,
-                    borderWidth: 1,
-                    borderColor: 'rgba(75, 192, 192, 1)',
-                    backgroundColor: 'rgba(75, 192, 192, 0.2)'
-                }]
+        const response_five_points = await fetch(url_five_points_wx, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
             },
-            options: {
-                plugins: {
-                    title: {
-                        display: true,
-                        text: '7 Day Forecast',
-                        padding: {
-                            top: 10,
-                            bottom: 30
-                        },
-                        font: {
-                            size: 20
-                        }
-                    }
-                },
-                scales: {
-                    y: {
-                        beginAtZero: true,
-                        ticks: {
-                            callback: function (value) {
-                                return value + 'ºF';
-                            }
-                        }
-                    }
-                }
-            }
+            body: JSON.stringify({ lat: lat, lon: lon })
         });
-  }
 
-async function getWeather(lat, lon) {
-    var latitude = lat;
-    var longitude = lon;
+        if (!response_five_points.ok) {
+            throw new Error(`Backend POST error: ${response_five_points.status}`);
+        }
 
+        const data_five_points = await response_five_points.json();
+        console.log("Backend 5 Points Data:", data_five_points);
+
+        if (!data_api.current) {
+            throw new Error("No current weather data available.");
+        }
+        return {
+            api : data_api,
+            fiveCities: data_five_points
+        };
+    } catch (error) {
+        console.error("Failed to fetch weather data:", error);
+        return null;
+    }
+}
+
+async function modifyPageHTML(lat, lon, weatherData) {
+    // If there is no weather data
+    if (!weatherData) {
+        console.error("No weather data provided to modifyPageHTML");
+        return;
+    }
+    // Get the results of the open-meteo api call and seperate the components of its returned data
+    const { api, fiveCities } = weatherData;
+    // Inject dynamic html into the current html to show the weather conditions
+    // Updatre Current Conditions Section
+    updateCurrentConditionsWeather(lat, lon, api, fiveCities);
+    // Update METAR Map Section with new lat and lon to center on
+    updateMETARMap(lat, lon);
+    // Update cloest cities wx cards section
+    update5ClosestLocations(api, fiveCities)
+
+    // Call this method to update the 7 day forecast with information from data_api from open-meteo
+    update7DayForecast(api, fiveCities);
+}
+
+// Takes in 2 pieces of information: the data from open meteo/herbie and the data for each of the 5 cities
+// This method should takje the html generated in updateClosestCityWxCards(weatherDataFivePoints) and inject it into the closest_cities_wx_cards component
+async function update5ClosestLocations(weatherData, weatherData_five_points) {
+    const daily_weather = weatherData.daily.weather_code;
+    const hourly_weather = weatherData.hourly;
+    const closest_cities_wx_info = weatherData_five_points.closest_points_weather;
+    if (!current_weather) {
+        console.error("No current weather data available.");
+        return;
+    }
+
+    if (closest_cities_wx_info) {
+        // create and populate Bootstrap cards for the weather fofor the closest towns near the user
+        wx_cards_html = updateClosestCityWxCards(closest_cities_wx_info);
+        // select the HTML element you want to change
+        wx_cards = document.getElementById('closest_cities_wx_cards');
+        // Update the HTML of the div to reflect all of the bootstrap cards
+        wx_cards.innerHTML = wx_cards_html;
+
+    // You can now use data.closest_location.city, .lat, .lon, etc. depending on the structure
+    }
+    else {
+        console.error("Closest cities weather data (weatherData_five_points) is missing or undefined.");
+        alert("Could not display nearby city weather data. Please try again later or check your connection.");
+    }
+}
+
+// No return here, it is just updating the map with the current location
+async function updateMETARMap(lat, lon) {
     // Fetch map.html and insert it into #map-container
     fetch("https://tropicainnovations.pythonanywhere.com/static/METAR_map/airport_metar_map.html")
         .then(response => response.text())
@@ -799,60 +710,51 @@ async function getWeather(lat, lon) {
                     L.marker([latitude, longitude]).addTo(existingMap)
                         .bindPopup("User's Location")
                         .openPopup();
-                } else {
-                    console.error("Leaflet map not found!");
                 }
             }, 5000); // Ensure map HTML is loaded
         })
         .catch(error => console.error("Error loading map:", error));
+}
 
-    // Fetch weather data from opem-meteo api
-    const url_wx_api = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=weather_code,wind_direction_10m,temperature_2m,dew_point_2m,relative_humidity_2m,apparent_temperature,wind_speed_10m,precipitation&hourly=temperature_2m,relative_humidity_2m,dew_point_2m,apparent_temperature,precipitation_probability,wind_speed_10m,wind_gusts_10m,wet_bulb_temperature_2m,cape&daily=weather_code,temperature_2m_max,temperature_2m_min,wind_speed_10m_max&temperature_unit=fahrenheit&wind_speed_unit=mph&timezone=auto`;
-    // Fetch backend info for the 5 closest points
-    const url_five_points_wx = `/`
-    try {
-        const response_api = await fetch(url_wx_api);
-        //const response_five_points = await fetch(five_points_wx);
-        const data_api = await response_api.json();
-        console.log(data_api);
-        //const data_five_points = await response_five_points.json();
-        const response_five_points = await fetch(url_five_points_wx, {
-  method: "POST",
-  headers: {
-    "Content-Type": "application/json"
-  },
-  body: JSON.stringify({ lat: latitude, lon: longitude })
-});
-const data_five_points = await response_five_points.json();
-        if (!data_api.current) {
-            throw new Error("No current weather data available.");
-        }
+// Need to pass in the latitude and longitude here, as well as the weatherDasta from openMeteo or precomputed point by point data from Herbie
+async function updateCurrentConditionsWeather(lat, lon, weatherData, data_five_points) {
+    var latitude = lat;
+    var longitude = lon;
 
     const temp_dial_svg = data_five_points.temp_dial;
     const dew_dial_svg = data_five_points.dew_dial;
     const wind_dial_svg = data_five_points.wind_dial;
     const five_cities = data_five_points.closest_points_weather;
-    let daily_weather = url_wx_api.daily;
-    console.log("daily weather", daily_weather);
+    let current_weather = weatherData.current;
+    let current_wx_code = weatherData.current.weather_code;
+    console.log("daily weather", current_wx_code);
     console.log("Full data_five_points:", data_five_points);
-
-    updateWeatherDisplay(data_api, five_cities);
 
 let currentConditionsHTML = `
 <div class="container d-flex justify-content-center">
   <div class="d-flex flex-wrap justify-content-center gap-3">
 
-    <div class="card shadow-sm border-0" style="width: 32%;">
+    <div class="card shadow-sm border-0" style="width: 23%;">
+      <div class="card-header text-white bg-success fw-bold text-center">
+        Current Weather
+      </div>
+        <div class="card-body d-flex justify-content-center align-items-center flex-column" style="background-color: white;">
+          <img src="${find_code(current_wx_code)[1]}" class="mb-2">
+          <h3 class="text-center m-0">${find_code(current_wx_code)[0]}</h3>
+        </div>
+
+    </div>
+
+    <div class="card shadow-sm border-0" style="width: 23%;">
       <div class="card-header text-white bg-success fw-bold text-center">
         Current Temperature
       </div>
       <div class="card-body d-flex justify-content-center align-items-center" style = "background-color: white;">
         ${temp_dial_svg}
-        ${daily_weather}
       </div>
     </div>
 
-    <div class="card shadow-sm border-0" style="width: 32%;">
+    <div class="card shadow-sm border-0" style="width: 23%;">
       <div class="card-header text-white bg-success fw-bold text-center">
         Current Dewpoint
       </div>
@@ -861,9 +763,9 @@ let currentConditionsHTML = `
       </div>
     </div>
 
-    <div class="card shadow-sm border-0" style="width: 32%;">
+    <div class="card shadow-sm border-0" style="width: 23%;">
       <div class="card-header text-white bg-success fw-bold text-center">
-        Current Windspeed & Direction
+        Windspeed
       </div>
       <div class="card-body d-flex justify-content-center align-items-center">
         ${wind_dial_svg}
@@ -877,15 +779,7 @@ let currentConditionsHTML = `
     let temp_dial_html = '<div class="card border-primary mb-3" style="max-width: 30rem; "max-height: 30rem;><div class="card-header">Current Temperature</div><div class="card-body">'+ temp_dial_svg +'</div></div>';
     let dew_dial_html = '<div class="card border-primary mb-3" style="max-width: 30rem;" "max-height: 30rem;><div class="card-header">Current Temperature</div><div class="card-body">'+ dew_dial_svg +'</div></div>';
     let wind_dial_html = '<div class="card border-primary mb-3" style="max-width: 30rem;"><div class="card-header">Current Wind Speed and Direction</div><div class="card-body">'+ wind_dial_svg +'</div></div>';
-    //let temp_dial_html1 = '<div class="col-md-4 col-sm-6 mb-3"><div class="d-flex rounded shadow overflow-hidden" style="min-height: 70px;"><!-- Left: Label --><div class="d-flex align-items-center justify-content-center px-3 text-white" style="background-color: #26a69a; min-width: 80px;"><strong>Temp</strong></div><!-- Right: SVG content --><div class="d-flex align-items-center justify-content-center px-2 flex-grow-1" style="background-color: #4fc3f7;">${temp_dial_svg}</div></div></div>';
-    //document.getElementById("current_weather").innerHTML += temp_dial_html;
-    //document.getElementById("current_weather").innerHTML += dew_dial_html;
-    //document.getElementById("current_weather").innerHTML += wind_dial_html;
     document.getElementById("current_weather").innerHTML += currentConditionsHTML;
-
-    } catch (error) {
-        console.error("Error fetching weather data:", error);
-    }
 }
 
 
@@ -901,13 +795,14 @@ function updateClosestCityWxCards(weatherDataFivePoints) {
     return wx_cards_html;
 }
 */
-
+// Retuns the HTML to dynamically interject into 5 closest locations to you
 function updateClosestCityWxCards(weatherDataFivePoints) {
     let wx_cards_html = '';
     wx_cards_html += '<h2>Weather in Cities Near Me</h2>';
     wx_cards_html += '<div class="city_weather_row">'; // Bootstrap grid with spacing
 
     for (const city in weatherDataFivePoints) {
+        console.log("weather city:", weatherDataFivePoints[city][4][0]);
         wx_cards_html += `
         <div class = "city_box">
             <div class="card shadow-sm border-primary">
@@ -954,44 +849,12 @@ function updateClosestCityWxCards(weatherDataFivePoints) {
 
 
 
-function updateWeatherDisplay(weatherData, weatherData_five_points) {
-    const current_weather = weatherData.current;
+function update7DayForecast(weatherData, weatherData_five_points) {
     const daily_weather = weatherData.daily;
+    console.log(daily_weather);
     const hourly_weather = weatherData.hourly;
     const closest_cities_wx_info = weatherData_five_points;
-
-    if (!current_weather) {
-        console.error("No current weather data available.");
-        return;
-    }
-
-    if (closest_cities_wx_info) {
-        /*
-        const closest_cities_wx = document.getElementById('closest_cities_wx');
-        let closest_wx_html = '';
-        for (const city in weatherData_five_points) {
-            closest_wx_html += 'City: ' + city + ' Temperature: ' + weatherData_five_points[city][4][0] + '⁰F' + '<br>';
-        }
-        closest_cities_wx.innerHTML += closest_wx_html;
-        */
-        // create and populate Bootstrap cards for the weather fofor the closest towns near the user
-        wx_cards_html = updateClosestCityWxCards(weatherData_five_points);
-        // select the HTML element you want to change
-        wx_cards = document.getElementById('closest_cities_wx_cards');
-        // Update the HTML of the div to reflect all of the bootstrap cards
-        wx_cards.innerHTML = wx_cards_html;
-
-  // You can now use data.closest_location.city, .lat, .lon, etc. depending on the structure
-}
-else {
-    console.error("Closest cities weather data (weatherData_five_points) is missing or undefined.");
-    alert("Could not display nearby city weather data. Please try again later or check your connection.");
-}
-console.log("weatherData:", weatherData.daily);  // Show the whole object
-console.log("closest_points_weather:", closest_cities_wx_info);  // Directly log this part
-
-    const wmo_description_daily = find_code(daily_weather.weather_code);
-    console.log(wmo_description_daily);
+    const wx_description_daily = daily_weather.weather_code;
     /*
     document.getElementById("current_weather").innerHTML = `
         <div class="card" style="width: 18rem;">
@@ -1021,28 +884,17 @@ console.log("closest_points_weather:", closest_cities_wx_info);  // Directly log
     let day = currDate.getDay();
     shifted_day_index = (day + 6) % 7;
     daysOfWeek = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
-    html += `<div class="forecast-grid">`;
+    html += `<h2> 7 Day Forecast </h2><br><div class="forecast-grid">`;
     for (let i = 0; i < 7; i++) {
         const dayIndex = (shifted_day_index + i) % 7;  // Wrap day of week index
         html += `
 
-        <!--<div class="card" style="width: 14%;">
-          <div class="card shadow-sm border-0" style="max-width: 320px; border-radius: 1rem; overflow: hidden;">
-            <div class="card-header text-center text-white fw-semibold" style="background-color: #26c6da;">
-              <p>${daysOfWeek[dayIndex]}</p>
-            </div>
-            <div class="card-body d-flex align-items-center justify-content-center" style="width: 220px; height: 90px;">
-                <p>High Temp: ${daily_weather.temperature_2m_max[dayIndex]} °F</p>
-                <p>Low Temp: ${daily_weather.temperature_2m_min[dayIndex]} °F</p>
-                <p>Weather code: ${wmo_description_daily}</p>
-
-            </div>
-          </div>-->
-
            <div class="forecast-day">
             <h4>${daysOfWeek[dayIndex]}</h4>
-            <p>🌤${daily_weather.temperature_2m_max[dayIndex]}°F / ${daily_weather.temperature_2m_min[dayIndex]}°F</p>
-            <p>Weather code: ${wmo_description_daily}</p>
+            <img src = ${find_code(wx_description_daily[i])[1]} style="width:75px; height:75px;">
+            <h5>${daily_weather.temperature_2m_max[dayIndex]}°F / ${daily_weather.temperature_2m_min[dayIndex]}°F</h5>
+            <p> ${find_code(wx_description_daily[i])[0]} </p>
+
           </div>
           <style>
 
@@ -1109,44 +961,6 @@ console.log("closest_points_weather:", closest_cities_wx_info);  // Directly log
     document.getElementById('forecast-container').innerHTML = html;
     addCollapsibleListeners();
 }
-
-/*
-    function createChart(daily_weather) {
-      const ctx = document.getElementById('myChart').getContext('2d');
-      new Chart(ctx, {
-        type: 'line',
-        data: {
-          labels: ["Day 1", "Day 2", "Day 3", "Day 4", "Day 5", "Day 6", "Day 7"],
-          datasets: [{
-            label: 'Max Temperature (°F)',
-            data: daily_weather.temperature_2m_max,
-            borderWidth: 2,
-            borderColor: 'rgba(255, 99, 132, 1)',
-            backgroundColor: 'rgba(255, 99, 132, 0.2)'
-          }]
-        },
-        options: {
-          responsive: true,
-          scales: {
-            y: { beginAtZero: false }
-          }
-        }
-      });
-    }*/
-
-/*function addCollapsibleListeners() {
-  document.querySelectorAll(".collapsible").forEach(button => {
-    button.addEventListener("click", function () {
-      this.classList.toggle("active");
-      const content = this.nextElementSibling;
-      if (content.style.display === "block") {
-        content.style.display = "none";
-      } else {
-        content.style.display = "block";
-      }
-    });
-  });
-}*/
 
 function addCollapsibleListeners() {
   document.querySelectorAll(".collapsible").forEach(button => {
