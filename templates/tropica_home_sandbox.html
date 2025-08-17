@@ -151,6 +151,7 @@
   margin-bottom: 10px;
 }
 
+
   </style>
 </head>
 <body>
@@ -204,6 +205,8 @@
             <div id = "closest_cities_wx_cards">
                 <!-- Put bootstrap cards containing the town name as the header and weather information as the body-->
             </div>
+            <div class="hourly_forecast">
+    </div>
     <div class="seven_day_forecast">
         <div id="forecast-container">
 
@@ -626,10 +629,21 @@ async function getWeatherData(lat, lon) {
         if (!data_api.current) {
             throw new Error("No current weather data available.");
         }
-        return {
-            api : data_api,
-            fiveCities: data_five_points
-        };
+        /*
+        data_five_points is in the format:
+
+        response = {
+            "temp_dial": temp_dial,
+            "dew_dial": dew_dial,
+            "wind_dial": wind_dial,
+            "closest_points_weather": closest_points_weather,
+            "closest_points_wx_data_hrrr": current,
+         }
+        */
+    return {
+      api: data_api,
+      fiveCities: data_five_points
+    };
     } catch (error) {
         console.error("Failed to fetch weather data:", error);
         return null;
@@ -651,7 +665,8 @@ async function modifyPageHTML(lat, lon, weatherData) {
     updateMETARMap(lat, lon);
     // Update cloest cities wx cards section
     update5ClosestLocations(api, fiveCities)
-
+    // Update the hourly weather using the HRRR model
+    updateHourlyWeather(fiveCities)
     // Call this method to update the 7 day forecast with information from data_api from open-meteo
     update7DayForecast(api, fiveCities);
 }
@@ -727,20 +742,45 @@ async function updateCurrentConditionsWeather(lat, lon, weatherData, data_five_p
     const five_cities = data_five_points.closest_points_weather;
     let current_weather = weatherData.current;
     let current_wx_code = weatherData.current.weather_code;
+
+    // This is the dictionary of the 5 closest points weather information in a dictionary
+    // The key is the city name and the value is all of the information for many hours
+    const temp_dial = data_five_points.temp_dial
+    const dew_dial = data_five_points.wind_dial
+    const wind_dial = data_five_points.wind_dial
+
+    const hrrr_temp = data_five_points.closest_points_wx_data_hrrr.current_temp;
+    const hrrr_dew  = data_five_points.closest_points_wx_data_hrrr.current_dew;
+    const hrrr_wspd = data_five_points.closest_points_wx_data_hrrr.wind_speed;
+    const wind_degrees = data_five_points.closest_points_wx_data_hrrr.wind_direction;
+    const wx_phenomena_description = data_five_points.closest_points_wx_data_hrrr.wx_phenomena_description;
+    const wx_phenomena_url = data_five_points.closest_points_wx_data_hrrr.wx_phenomena_url;
+    // Break down the meaning of firstValue
+    // Extract the list of temperatures by hours for the current location
+    /*
+    temp_list = five_cities_hrrr[4]
+    dew_list = five_cities_hrrr[5]
+    wx_icon = five_cities_hrrr[6]
+    cloud_cover = five_cities_hrrr[7]
+    prate = five_cities_hrrr[8]
+    wind_speed = five_cities_hrrr[9]
+    wind_direction = five_cities_hrrr[10]
+    */
+
     console.log("daily weather", current_wx_code);
     console.log("Full data_five_points:", data_five_points);
 
 let currentConditionsHTML = `
 <div class="container d-flex justify-content-center">
   <div class="d-flex flex-wrap justify-content-center gap-3">
-
+    <!--
     <div class="card shadow-sm border-0" style="width: 23%;">
       <div class="card-header text-white bg-success fw-bold text-center">
         Current Weather
       </div>
         <div class="card-body d-flex justify-content-center align-items-center flex-column" style="background-color: white;">
-          <img src="${find_code(current_wx_code)[1]}" class="mb-2">
-          <h3 class="text-center m-0">${find_code(current_wx_code)[0]}</h3>
+          <img src="${wx_phenomena_url}" class="mb-2">
+          <h3 class="text-center m-0">${wx_phenomena_description}</h3>
         </div>
 
     </div>
@@ -770,10 +810,62 @@ let currentConditionsHTML = `
       <div class="card-body d-flex justify-content-center align-items-center">
         ${wind_dial_svg}
       </div>
+    </div>-->
+
+    <div class="container">
+  <div class="row g-3">
+
+    <div class="col-12 col-sm-6 col-lg-3">
+      <div class="card shadow-sm border-0 h-100">
+        <div class="card-header text-white bg-success text-center">Current Weather</div>
+        <div class="card-body d-flex flex-column align-items-center justify-content-center">
+          <img src="${wx_phenomena_url}" class="mb-2" style="max-width:70%;height:auto;">
+          <h3 class="text-center m-0">${wx_phenomena_description}</h3>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-12 col-sm-6 col-lg-3">
+      <div class="card shadow-sm border-0 h-100">
+        <div class="card-header text-white bg-success text-center">Current Temperature</div>
+        <div class="card-body d-flex flex-column align-items-center justify-content-center">
+        ${temp_dial_svg}
+        </div>
+      </div>
+    </div>
+
+
+    <div class="col-12 col-sm-6 col-lg-3">
+      <div class="card shadow-sm border-0 h-100">
+        <div class="card-header text-white bg-success text-center">Current Dewpoint</div>
+        <div class="card-body d-flex flex-column align-items-center justify-content-center">
+          ${dew_dial_svg}
+        </div>
+      </div>
     </div>
 
   </div>
   </div>
+  <style>
+  /* Card body that holds a dial */
+.dial-body {
+  position: relative;
+  width: 100%;
+  /* tweak aspect ratio to taste (w:h) */
+  aspect-ratio: 1 / 1.2;      /* taller */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: white;
+}
+
+/* Make any inline SVG scale to its parent */
+.dial-body svg {
+  width: 100%;
+  height: 100%;
+  max-width: 100%;
+}
+  </style>
 `;
     // Add the dial SVG to the page
     let temp_dial_html = '<div class="card border-primary mb-3" style="max-width: 30rem; "max-height: 30rem;><div class="card-header">Current Temperature</div><div class="card-body">'+ temp_dial_svg +'</div></div>';
@@ -802,28 +894,39 @@ function updateClosestCityWxCards(weatherDataFivePoints) {
     wx_cards_html += '<div class="city_weather_row">'; // Bootstrap grid with spacing
 
     for (const city in weatherDataFivePoints) {
-        console.log("weather city:", weatherDataFivePoints[city][4][0]);
+        const cityData = weatherDataFivePoints[city];
+        const cityName = cityData.city_name;
+        const state = cityData.state;
+        const lat = cityData.latitude.toFixed(2);
+        const lon = cityData.longitude.toFixed(2);
+        console.log("weather city:", city);
+        const temp = cityData.hourly[0].temp;
+        const dew = cityData.hourly[0].dew;
+        const wind_speed = cityData.hourly[0].wind_speed;
+        const wind_direction = cityData.hourly[0].wind_dir_text;
+        const cloud_cover = cityData.hourly[0].cloud_cover;
+        const wx_icon_url = cityData.hourly[0].wx_icon;
+        const wx_icon_description = cityData.hourly[0].wx_desc;
+
         wx_cards_html += `
         <div class = "city_box">
             <div class="card shadow-sm border-primary">
-                <div class="card-header bg-primary text-white">${city}</div>
+                <div class="card-header bg-primary text-white">${cityName}</div>
                 <div class="card-body text-primary">
-                    <h5 class="card-title">Temperature: ${weatherDataFivePoints[city][4][0]}</h5>
+                    <img src="${wx_icon_url}" class="mb-2">
+                    <h2 class="text-center m-0">${wx_icon_description}</h2>
+                    <h5 class="card-title">Temperature: ${temp}</h5>
+                    <h5 class="card-title">Dewpoint: ${dew}</h5>
+                    <h5 class="card-title">Wind Speed: ${wind_speed} mph</h5>
+                    <h5 class="card-title">Wind Direction: ${wind_direction}</h5>
                 </div>
             </div>
-        </div>
-            <!--<div class="col-12 col-sm-6 col-md-4 col-lg-3">
-                <div class="card h-100 shadow-sm border-primary">
-                    <div class="card-header bg-primary text-white">${city}</div>
-                    <div class="card-body text-primary">
-                        <h5 class="card-title">Temperature: ${weatherDataFivePoints[city][4][0]}</h5>
-                    </div>
-                </div>
-            </div>-->`;
+        </div>`;
     }
 
     wx_cards_html += `</div>
     <style>
+    /*
     .city_weather_row {
   display: flex;
   flex-wrap: wrap;
@@ -841,9 +944,159 @@ function updateClosestCityWxCards(weatherDataFivePoints) {
   padding: 0.5rem;
   text-align: center;
   box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}*/
+/* Make the hourly grid responsive like your 7-day tiles */
+.city_weather_row{
+  display:grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap:.75rem;
 }
-    </style>`; // close .row
+
+/* Make icons scale with cards (no fixed pixels) */
+.city_weather_row img{
+  width:60%;      /* scales with the card */
+  max-width:90px; /* keeps them from getting huge on desktop */
+  height:auto;    /* preserve aspect ratio */
+  display:block;
+  margin:.35rem auto .5rem;
+}
+    </style>`;
     return wx_cards_html;
+}
+
+function updateHourlyWeather(weatherDataFivePoints) {
+    let hourly_cards_html = '';
+    hourly_cards_html += '<h2>Hourly Weather</h2>';
+    hourly_cards_html += '<div class="hourly_weather_row">'; // Bootstrap grid with spacing
+    // Get the current city from the list of 5 cities in current conditions
+    const current_city = weatherDataFivePoints.closest_points_wx_data_hrrr.city_name;
+    console.log(current_city);
+    console.log(weatherDataFivePoints.closest_points_weather[current_city]);
+    // Get the data for the current city in the json for the list of data for the 5 different cities
+    const cityData = weatherDataFivePoints.closest_points_weather[current_city];
+    for (const hour of cityData.hourly) {
+        const temp = hour.temp;
+        // This is the UTC datetime that is the current time ahead in the model calculated in hrrr_point_forecast.py
+        const utc_datetime = hour.hour;
+        // Append Z so that it correctly converts UTC (Zulu time) to the time zone local to the user.
+        const local_datetime = new Date(utc_datetime + 'Z');
+        //const local_datetime = local_date.toLocaleString();
+        // Extracts the hour of the day from the local datetime
+        local_hour = local_datetime.getHours();
+        local_time = "";
+        // Convert the 24 hour time to 12 hour time
+        if(local_hour <= 12) {
+            local_time = local_hour.toString() + " AM";
+        }
+        else {
+            local_time = local_hour.toString() + " PM";
+        }
+        // Gets the local day of the month
+        local_dom = local_datetime.getDate()
+        // Gets the local month of the year
+        // Add 1 to get the conventional month 1-12
+        full_month = ""
+        local_month = (local_datetime.getMonth() + 1).toString();
+        if(local_month == 1) {
+            full_month = "January";
+        } else if(local_month == 2) {
+            full_month = "Febuary";
+        } else if(local_month == 3) {
+            full_month = "March";
+        } else if(local_month == 4) {
+            full_month = "April";
+        } else if(local_month == 5) {
+            full_month = "May";
+        } else if(local_month == 6) {
+            full_month = "June";
+        } else if(local_month == 7) {
+            full_month = "July";
+        } else if(local_month == 8) {
+            full_month = "August";
+        } else if(local_month == 9) {
+            full_month = "September";
+        } else if(local_month == 10) {
+            full_month = "October";
+        } else if(local_month == 11) {
+            full_month = "November";
+        } else if(local_month == 12) {
+            full_month = "December";
+        }
+
+        // Gets the full year in local time
+        local_year = (local_datetime.getFullYear()).toString();
+        const localTime = local_datetime.toLocaleString(undefined, {
+          month: "long", day: "numeric", year: "numeric",
+          hour: "numeric", minute: "2-digit", hour12: true
+
+
+        });
+         //const dateString = now.toString();
+        const dew = hour.dew;
+        const wind_speed = hour.wind_speed;
+        const wind_direction = hour.wind_dir_text;
+        const cloud_cover = hour.cloud_cover;
+        const wx_icon_url = hour.wx_icon;
+        const wx_icon_description = hour.wx_desc;
+
+        hourly_cards_html += `
+        <div class = "hourly_box">
+            <div class="card shadow-sm border-primary">
+                <!--<div class="card-header bg-primary text-white">${local_time}  ${full_month}  ${local_dom} ${local_year}</div>-->
+                <div class="card-header bg-primary text-white">${localTime}</div>
+                <div class="card-body text-primary">
+                    <img src="${wx_icon_url}" class="mb-2">
+                    <h2 class="text-center m-0">${wx_icon_description}</h2>
+                    <h5 class="card-title">Temperature: ${temp}</h5>
+                    <h5 class="card-title">Dewpoint: ${dew}</h5>
+                    <h5 class="card-title">Wind Speed: ${wind_speed} mph</h5>
+                    <h5 class="card-title">Wind Direction: ${wind_direction}</h5>
+                    <h5 class="card-title">Cloud Cover: ${cloud_cover}</h5>
+
+                </div>
+            </div>
+        </div>`;
+    }
+
+    hourly_cards_html += `</div>
+    <style>
+    /*
+    .hourly_weather_row {
+  display: flex;
+  flex-wrap: wrap;
+  width: 100%;
+  gap: 0.5rem;
+  padding: 0.5rem;
+}
+
+.hourly_box {
+  flex: 1 0 0;
+  min-width: 0;
+  background-color: #007bff;
+  color: white;
+  border-radius: 8px;
+  padding: 0.5rem;
+  text-align: center;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}*/
+/* Make the hourly grid responsive like your 7-day tiles */
+.hourly_weather_row{
+  display:grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap:.75rem;
+}
+
+/* Make icons scale with cards (no fixed pixels) */
+.hourly_weather_row img{
+  width:60%;      /* scales with the card */
+  max-width:90px; /* keeps them from getting huge on desktop */
+  height:auto;    /* preserve aspect ratio */
+  display:block;
+  margin:.35rem auto .5rem;
+}
+    </style>`;
+    // Append the new hourly weather html cards to the hourly_weather div
+    document.querySelector(".hourly_forecast").innerHTML += hourly_cards_html;
 }
 
 
@@ -961,6 +1214,7 @@ function update7DayForecast(weatherData, weatherData_five_points) {
     document.getElementById('forecast-container').innerHTML = html;
     addCollapsibleListeners();
 }
+
 
 function addCollapsibleListeners() {
   document.querySelectorAll(".collapsible").forEach(button => {
