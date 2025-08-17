@@ -177,30 +177,33 @@ def describe_smaller_arc(cx, cy, radius, start_angle, end_angle):
     return f'M {start_pt[0]}, {start_pt[1]} A {radius}, {radius} 0 {large_arc}, 0 {end_pt[0]}, {end_pt[1]}'
 def create_dial(temperature, dewpoint, speed, direction):
     temperature_categories = [
-        ("Extreme Cold (Frostbite Risk)", "#4B0082"),     # -40 to -10°F — Deep indigo (dangerously cold)
-        ("Very Cold", "#1E90FF"),                         # -10 to 20°F — Dodger blue (very cold, but manageable)
-        ("Cold", "#00BFFF"),                              # 20 to 40°F — Deep sky blue (chilly, jacket weather)
-        ("Cool", "#87CEEB"),                              # 40 to 50°F — Light blue (mildly cool, light layer)
-        ("Comfortable", "#2ECC71"),                       # 50 to 70°F — Soft green (ideal weather)
-        ("Mildly Warm", "#F4D03F"),                       # 70 to 80°F — Golden yellow (sunny, pleasant)
-        ("Warm", "#FFA500"),                              # 80 to 90°F — Orange (hot, caution in prolonged exposure)
-        ("Hot", "#FF4500"),                               # 90 to 100°F — Orange-red (very hot, dehydration risk)
-        ("Very Hot (Heat Exhaustion Risk)", "#FF0000"),   # 100 to 110°F — Red (danger of heat stress)
-        ("Extreme Heat (Heat Stroke Risk)", "#8B0000")    # 110 to 120°F — Dark red (life-threatening)
-    ]
+        ("Extreme Cold (Frostbite Risk)", "#FFEFF4"),     # -40 to -10°F — Very light pink (frosty cold)
+        ("Bitter Cold", "#F8C8DC"),                       # -10 to 0°F — Frosty blush (muted pink)
+        ("Very Cold", "#FFCCE5"),                         # 0 to 20°F — Soft baby pink
+        ("Cold", "#AEC6CF"),                              # 20 to 40°F — Pastel blue (cool but not too saturated)
+        ("Cool", "#4B9CD3"),                              # 40 to 50°F — Muted cool blue
+        ("Comfortable", "#2ECC71"),                       # 50 to 60°F — Soft green
+        ("Mild", "#A2D95F"),                              # 60 to 70°F — Spring green
+        ("Warm", "#F4D03F"),                              # 70 to 80°F — Golden yellow
+        ("Hot", "#FF6347"),                               # 80 to 90°F — Orange
+        ("Very Hot", "#FF0000"),                          # 90 to 100°F — Tomato red-orange
+        ("Scorching", "#800080"),                         # 100 to 110°F — Red
+        ("Extreme Heat", "#8B00FF"),                      # 110 to 120°F — Purple
+        ]
 
     dewpoint_categories = [
-        ("Extremely Dry", "#8B4513"),        # < 0°F — SaddleBrown (very dry, static risk)
-        ("Very Dry", "#A0522D"),             # 0–10°F — Sienna (dry, lips/chapped skin)
-        ("Dry", "#CD853F"),                  # 10–20°F — Peru (dry but not extreme)
-        ("Comfortably Dry", "#DAA520"),      # 20–35°F — Goldenrod (cool, low humidity)
-        ("Comfortable", "#2ECC71"),          # 35–55°F — Green (ideal comfort range)
-        ("Noticeably Humid", "#F1C40F"),     # 55–60°F — Yellow (some may notice stickiness)
-        ("Humid", "#FFA500"),                # 60–65°F — Orange (muggy, unpleasant for many)
-        ("Very Humid", "#FF6347"),           # 65–70°F — Tomato (sweaty, uncomfortable)
-        ("Oppressive", "#FF0000"),           # 70–75°F — Red (air feels heavy, hard to cool off)
-        ("Extremely Oppressive", "#8B0000")  # >75°F — DarkRed (dangerous for prolonged exertion)
+        ("Extremely Dry", "#5C4033"),        # < 0°F — Dark brown (very dry, static risk)
+        ("Very Dry", "#7B4D1C"),             # 0–10°F — Saddle brown
+        ("Dry", "#A0522D"),                  # 10–20°F — Sienna (dry but tolerable)
+        ("Comfortably Dry", "#C19A6B"),      # 20–35°F — Tan (cool, dry air)
+        ("Comfortable", "#ADFFB0"),          # 35–55°F — Light mint green (ideal comfort range)
+        ("Muggy-lite", "#7CFC00"),     # 55–60°F — Lawn green (fresh but sticky)
+        ("Humid", "#32CD32"),                # 60–65°F — Lime green (muggy)
+        ("Very Humid", "#228B22"),           # 65–70°F — Forest green (air feels heavy)
+        ("Oppressive", "#006400"),           # 70–75°F — Dark green (suffocating)
+        ("Miserable", "#013220")  # >75°F — Deep jungle green (extremely humid)
     ]
+
 
 
     wind_categories = [
